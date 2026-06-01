@@ -13,8 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const rawToken = readCookieValue(req.headers.cookie, getSessionCookieName());
       const envelope = await readSessionToken(rawToken);
-      if (envelope?.accessToken) {
-        await logoutFromAuthService(envelope.accessToken);
+      if (envelope?.refreshToken || envelope?.accessToken) {
+        await logoutFromAuthService(envelope.refreshToken || envelope.accessToken || '');
       }
       auditEvent({ action: 'auth.logout', status: 'success', session: envelope?.session || null, request: req });
     } catch {

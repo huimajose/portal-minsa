@@ -36,6 +36,7 @@ Aplicacao migrada para Next.js com roteamento por paginas.
 - As credenciais de desenvolvimento sao lidas no backend; a UI nao expoe perfis nem palavras-passe.
 - O painel de utilizadores ficou em modo `read-only` ate a integracao com o `auth-service`.
 - Se `AUTH_SERVICE_BASE_URL` estiver configurado em `.env.local`, as rotas locais de auth passam a funcionar como proxy seguro para o `auth-service`.
+- O `auth-service` atual usa o fluxo real `POST /auth/login` -> OTP -> `POST /auth/verify-otp`, com refresh em `POST /auth/token/refresh` e revoke em `POST /auth/token/revoke`.
 - O `access token` do backend real nao vai para o browser; ele fica apenas dentro do cookie de sessao assinado pelo servidor.
 - O frontend consome a sessao apenas via `PortalContext` e `GET /api/auth/me`.
 - As operacoes criticas passam por autorizacao no backend com claims/perfis validados no servidor.
