@@ -5,6 +5,7 @@ const SESSION_TTL_SECONDS = 60 * 60;
 
 interface SessionEnvelope {
   session: UserSession;
+  accessToken?: string;
   exp: number;
 }
 
@@ -51,9 +52,10 @@ async function sign(payload: string): Promise<string> {
   return base64UrlEncode(raw);
 }
 
-export async function createSessionToken(session: UserSession): Promise<string> {
+export async function createSessionToken(session: UserSession, accessToken?: string): Promise<string> {
   const envelope: SessionEnvelope = {
     session,
+    accessToken,
     exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS
   };
   const payload = base64UrlEncode(JSON.stringify(envelope));
@@ -63,6 +65,11 @@ export async function createSessionToken(session: UserSession): Promise<string> 
 }
 
 export async function verifySessionToken(token: string | undefined): Promise<UserSession | null> {
+  const envelope = await readSessionToken(token);
+  return envelope?.session || null;
+}
+
+export async function readSessionToken(token: string | undefined): Promise<SessionEnvelope | null> {
   if (!token) return null;
 
   const parts = token.split('.');
@@ -80,7 +87,7 @@ export async function verifySessionToken(token: string | undefined): Promise<Use
     if (envelope.exp < now) {
       return null;
     }
-    return envelope.session;
+    return envelope;
   } catch {
     return null;
   }

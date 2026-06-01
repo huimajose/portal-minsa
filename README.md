@@ -35,3 +35,5 @@ Aplicacao migrada para Next.js com roteamento por paginas.
 - O frontend deixou de usar `localStorage` para sessao.
 - As credenciais de desenvolvimento sao lidas no backend; a UI nao expoe perfis nem palavras-passe.
 - O painel de utilizadores ficou em modo `read-only` ate a integracao com o `auth-service`.
+- Se `AUTH_SERVICE_BASE_URL` estiver configurado em `.env.local`, as rotas locais de auth passam a funcionar como proxy seguro para o `auth-service`.
+- O `access token` do backend real nao vai para o browser; ele fica apenas dentro do cookie de sessao assinado pelo servidor.
