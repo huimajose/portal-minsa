@@ -1,0 +1,115 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* Frosted glass radial background styling */
+html, body {
+  background-color: #f0f4f8;
+  background-image: radial-gradient(at 0% 0%, hsla(210,100%,93%,1) 0, transparent 40%),
+                    radial-gradient(at 50% 0%, hsla(205,100%,90%,1) 0, transparent 50%),
+                    radial-gradient(at 100% 0%, hsla(190,100%,95%,1) 0, transparent 45%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+/* Glassmorphism custom components */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.02) !important;
+}
+
+.glass-panel-heavy {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.04) !important;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.015) !important;
+}
+
+.filter-pill {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 6px 12.5px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.filter-pill:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 74, 153, 0.25);
+}
+
+/* Custom branding colors */
+.text-minsa-blue {
+  color: #004a99;
+}
+
+.bg-minsa-blue {
+  background-color: #004a99;
+}
+
+.border-minsa-blue {
+  border-color: #004a99;
+}
+
+/* Glass buttons and transitions */
+.btn-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-glass:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-0.5px);
+}
+
+/* Smooth customized scrollbars for side panels */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 74, 153, 0.15);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 74, 153, 0.3);
+}
+
+/* Print optimizations */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

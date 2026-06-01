@@ -1,0 +1,6 @@
+{
+  "name": "Portal MINSA",
+  "description": "Portal Institucional do Ministério da Saúde de Angola para estatísticas nacionais, monitorização hospitalar e vigilância epidemiológica.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
