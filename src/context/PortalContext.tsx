@@ -3,7 +3,7 @@ import { MOCK_HOSPITALS, MOCK_DISEASE_METRICS, MOCK_EPIDEMIOLOGICAL_ALERTS, getD
 import { UserSession, Hospital, EpidemiologicalAlert, DiseaseMetric } from '../types';
 import { hasPermission } from '../components/RoleGuard';
 import { DEMO_USER_DIRECTORY } from '../lib/demo-users';
-import { fetchSession, logout } from '../lib/auth';
+import { createAlertRequest, createPatientAdmissionRequest, fetchSession, logout } from '../lib/auth';
 import { SecureAction } from '../lib/permissions';
 
 export interface ManagedUser {
@@ -34,8 +34,8 @@ interface PortalContextValue {
   handleAddPatientToHospital: (
     hospitalId: string,
     consultationData?: { disease: string; isHospitalized: boolean; triageLevel: 'Normal' | 'Atenção' | 'Crítico' }
-  ) => void;
-  handleAddAlert: (alertData: Omit<EpidemiologicalAlert, 'id' | 'date'>) => void;
+  ) => Promise<void>;
+  handleAddAlert: (alertData: Omit<EpidemiologicalAlert, 'id' | 'date'>) => Promise<void>;
   refreshSession: () => Promise<UserSession | null>;
   setSelectedProvince: (value: string) => void;
   setSelectedPeriod: (value: string) => void;
@@ -90,8 +90,8 @@ export function PortalProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!userSession) return;
-    const hasViewAll = hasPermission(userSession, 'VIEW_ALL_PROVINCES');
-    if (!hasViewAll && userSession.province) {
+    const canViewAll = hasPermission(userSession, 'VIEW_ALL_PROVINCES');
+    if (!canViewAll && userSession.province) {
       setSelectedProvince(userSession.province);
       setSelectedMunicipality('All');
     }
@@ -112,7 +112,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     return session;
   };
 
-  const handleAddPatientToHospital = (
+  const handleAddPatientToHospital = async (
     hospitalId: string,
     consultationData?: { disease: string; isHospitalized: boolean; triageLevel: 'Normal' | 'Atenção' | 'Crítico' }
   ) => {
@@ -125,6 +125,12 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     const isHospitalized = consultationData ? consultationData.isHospitalized : true;
     const diseaseName = consultationData ? consultationData.disease : 'Malaria';
     const triage = consultationData ? consultationData.triageLevel : 'Atenção';
+
+    await createPatientAdmissionRequest(hospitalId, {
+      disease: diseaseName,
+      isHospitalized,
+      triageLevel: triage
+    });
 
     setHospitalsState((prev) => prev.map((hospital) => {
       if (hospital.id !== hospitalId) return hospital;
@@ -154,19 +160,14 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const handleAddAlert = (alertData: Omit<EpidemiologicalAlert, 'id' | 'date'>) => {
+  const handleAddAlert = async (alertData: Omit<EpidemiologicalAlert, 'id' | 'date'>) => {
     if (!userSession) return;
     if (!hasPermission(userSession, 'EMIT_ALERT')) {
       alert('Acesso negado: o seu perfil ativo nao possui privilegios para emitir alertas epidemiologicos.');
       return;
     }
 
-    const newAlert: EpidemiologicalAlert = {
-      ...alertData,
-      id: `alert-${Date.now()}`,
-      date: new Date().toISOString().split('T')[0]
-    };
-
+    const newAlert = (await createAlertRequest(alertData)) as EpidemiologicalAlert;
     setAlertsState((prev) => [newAlert, ...prev]);
   };
 

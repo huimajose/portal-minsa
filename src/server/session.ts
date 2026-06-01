@@ -3,9 +3,10 @@ import { UserSession } from '../types';
 const SESSION_COOKIE_NAME = 'minsa_session';
 const SESSION_TTL_SECONDS = 60 * 60;
 
-interface SessionEnvelope {
+export interface SessionEnvelope {
   session: UserSession;
   accessToken?: string;
+  refreshToken?: string;
   exp: number;
 }
 
@@ -52,21 +53,17 @@ async function sign(payload: string): Promise<string> {
   return base64UrlEncode(raw);
 }
 
-export async function createSessionToken(session: UserSession, accessToken?: string): Promise<string> {
+export async function createSessionToken(session: UserSession, accessToken?: string, refreshToken?: string): Promise<string> {
   const envelope: SessionEnvelope = {
     session,
     accessToken,
+    refreshToken,
     exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS
   };
   const payload = base64UrlEncode(JSON.stringify(envelope));
   const signature = await sign(payload);
 
   return `${payload}.${signature}`;
-}
-
-export async function verifySessionToken(token: string | undefined): Promise<UserSession | null> {
-  const envelope = await readSessionToken(token);
-  return envelope?.session || null;
 }
 
 export async function readSessionToken(token: string | undefined): Promise<SessionEnvelope | null> {
@@ -91,6 +88,11 @@ export async function readSessionToken(token: string | undefined): Promise<Sessi
   } catch {
     return null;
   }
+}
+
+export async function verifySessionToken(token: string | undefined): Promise<UserSession | null> {
+  const envelope = await readSessionToken(token);
+  return envelope?.session || null;
 }
 
 export function getSessionCookieName(): string {

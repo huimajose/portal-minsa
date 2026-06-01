@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { auditEvent } from '../../../src/server/audit';
 import { isAuthServiceConfigured, logoutFromAuthService } from '../../../src/server/auth-service';
 import { getSessionCookieName, readCookieValue, readSessionToken, serializeExpiredSessionCookie } from '../../../src/server/session';
 
@@ -15,9 +16,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (envelope?.accessToken) {
         await logoutFromAuthService(envelope.accessToken);
       }
+      auditEvent({ action: 'auth.logout', status: 'success', session: envelope?.session || null, request: req });
     } catch {
-      // Logout should still clear local session even if backend revocation fails.
+      auditEvent({ action: 'auth.logout', status: 'error', request: req, details: { provider: 'auth-service' } });
     }
+  } else {
+    const rawToken = readCookieValue(req.headers.cookie, getSessionCookieName());
+    const envelope = await readSessionToken(rawToken);
+    auditEvent({ action: 'auth.logout', status: 'success', session: envelope?.session || null, request: req, details: { provider: 'demo' } });
   }
 
   res.setHeader('Set-Cookie', serializeExpiredSessionCookie());

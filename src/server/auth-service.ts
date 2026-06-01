@@ -3,11 +3,23 @@ import { UserSession } from '../types';
 interface AuthServiceLoginResponse {
   token?: string;
   accessToken?: string;
+  refreshToken?: string;
+  session?: Partial<UserSession>;
+  user?: Partial<UserSession>;
+  requiresOtp?: boolean;
+  requiresMfa?: boolean;
+  challengeId?: string;
+}
+
+interface AuthServiceMeResponse {
   session?: Partial<UserSession>;
   user?: Partial<UserSession>;
 }
 
-interface AuthServiceMeResponse {
+interface AuthServiceRefreshResponse {
+  token?: string;
+  accessToken?: string;
+  refreshToken?: string;
   session?: Partial<UserSession>;
   user?: Partial<UserSession>;
 }
@@ -41,6 +53,10 @@ function getLogoutPath(): string {
   return process.env.AUTH_SERVICE_LOGOUT_PATH || '/api/auth/logout';
 }
 
+function getRefreshPath(): string {
+  return process.env.AUTH_SERVICE_REFRESH_PATH || '/api/auth/refresh';
+}
+
 function normalizeSession(rawSession: Partial<UserSession> | undefined): UserSession | null {
   if (!rawSession?.username || !rawSession?.name || !rawSession?.role) {
     return null;
@@ -63,7 +79,7 @@ export function isAuthServiceConfigured(): boolean {
   return Boolean(getBaseUrl());
 }
 
-export async function loginWithAuthService(username: string, password: string): Promise<{ session: UserSession; accessToken: string }> {
+export async function loginWithAuthService(username: string, password: string): Promise<{ session: UserSession; accessToken: string; refreshToken?: string }> {
   const response = await fetch(buildUrl(getLoginPath()), {
     method: 'POST',
     headers: {
@@ -77,6 +93,10 @@ export async function loginWithAuthService(username: string, password: string): 
     throw new Error(data.error || data.message || 'Falha ao autenticar no auth-service.');
   }
 
+  if (data.requiresOtp || data.requiresMfa) {
+    throw new Error('Login requer OTP/MFA para este perfil administrativo. Conclua o segundo fator no auth-service.');
+  }
+
   const accessToken = data.token || data.accessToken;
   const session = normalizeSession(data.session || data.user);
 
@@ -84,7 +104,7 @@ export async function loginWithAuthService(username: string, password: string): 
     throw new Error('Resposta invalida do auth-service durante o login.');
   }
 
-  return { session, accessToken };
+  return { session, accessToken, refreshToken: data.refreshToken };
 }
 
 export async function fetchSessionFromAuthService(accessToken: string): Promise<UserSession | null> {
@@ -123,4 +143,35 @@ export async function logoutFromAuthService(accessToken: string): Promise<void> 
     const data = await parseJson<{ error?: string; message?: string }>(response);
     throw new Error(data.error || data.message || 'Falha ao encerrar sessao no auth-service.');
   }
+}
+
+export async function refreshSessionWithAuthService(refreshToken: string): Promise<{ session: UserSession; accessToken: string; refreshToken?: string } | null> {
+  const response = await fetch(buildUrl(getRefreshPath()), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ refreshToken })
+  });
+
+  if (response.status === 401 || response.status === 403 || response.status === 404) {
+    return null;
+  }
+
+  const data = await parseJson<AuthServiceRefreshResponse & { error?: string; message?: string }>(response);
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'Falha ao renovar sessao no auth-service.');
+  }
+
+  const accessToken = data.token || data.accessToken;
+  const session = normalizeSession(data.session || data.user);
+  if (!accessToken || !session) {
+    return null;
+  }
+
+  return {
+    session,
+    accessToken,
+    refreshToken: data.refreshToken || refreshToken
+  };
 }

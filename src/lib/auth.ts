@@ -33,7 +33,7 @@ export async function login(username: string, password: string): Promise<UserSes
 }
 
 export async function fetchSession(): Promise<UserSession | null> {
-  const response = await fetch('/api/auth/session', {
+  const response = await fetch('/api/auth/me', {
     method: 'GET',
     credentials: 'same-origin'
   });
@@ -53,4 +53,41 @@ export async function logout(): Promise<void> {
   });
 
   await parseJson<{ success: boolean }>(response);
+}
+
+export async function createAlertRequest(alert: {
+  disease: string;
+  province: string;
+  alertLevel: string;
+  casesCount: number;
+  growthRate: number;
+  description: string;
+}) {
+  const response = await fetch('/api/alerts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'same-origin',
+    body: JSON.stringify(alert)
+  });
+
+  const data = await parseJson<{ alert: any }>(response);
+  return data.alert;
+}
+
+export async function createPatientAdmissionRequest(
+  hospitalId: string,
+  consultationData: { disease: string; isHospitalized: boolean; triageLevel: string }
+) {
+  const response = await fetch(`/api/hospitals/${hospitalId}/patients`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'same-origin',
+    body: JSON.stringify(consultationData)
+  });
+
+  return parseJson<{ success: boolean }>(response);
 }

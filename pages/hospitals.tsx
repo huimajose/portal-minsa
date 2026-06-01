@@ -9,7 +9,7 @@ export default function HospitalsPage() {
     hospitalId: string,
     consultationData?: { disease: string; isHospitalized: boolean; triageLevel: 'Normal' | 'Atenção' | 'Crítico' }
   ) => {
-    portal.handleAddPatientToHospital(hospitalId, consultationData);
+    return portal.handleAddPatientToHospital(hospitalId, consultationData);
   };
 
   return (
