@@ -17,7 +17,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     if (isAuthServiceConfigured()) {
-      const { session, accessToken, refreshToken } = await loginWithAuthService(username, password);
+      const result = await loginWithAuthService(username, password);
+      if (result.status === 'otp_required') {
+        auditEvent({
+          action: 'auth.login.challenge',
+          status: 'success',
+          request: req,
+          details: { provider: 'auth-service', username, challengeId: result.challengeId }
+        });
+        return res.status(202).json({ requiresOtp: true, challengeId: result.challengeId });
+      }
+
+      const { session, accessToken, refreshToken } = result;
       const token = await createSessionToken(session, accessToken, refreshToken);
       res.setHeader('Set-Cookie', serializeSessionCookie(token));
       auditEvent({ action: 'auth.login', status: 'success', session, request: req, details: { provider: 'auth-service' } });

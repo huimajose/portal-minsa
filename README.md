@@ -40,4 +40,5 @@ Aplicacao migrada para Next.js com roteamento por paginas.
 - O frontend consome a sessao apenas via `PortalContext` e `GET /api/auth/me`.
 - As operacoes criticas passam por autorizacao no backend com claims/perfis validados no servidor.
 - Ha suporte para refresh e rotacao de sessao quando o `auth-service` expuser `AUTH_SERVICE_REFRESH_PATH`.
+- Perfis que exigem OTP/MFA podem concluir o segundo fator pela UI de login quando o `auth-service` expuser `AUTH_SERVICE_OTP_PATH`.
 - Login, logout, leitura de sessao e operacoes protegidas emitem logs de auditoria no backend.

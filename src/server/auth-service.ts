@@ -24,6 +24,20 @@ interface AuthServiceRefreshResponse {
   user?: Partial<UserSession>;
 }
 
+export interface AuthenticatedAuthResult {
+  status: 'authenticated';
+  session: UserSession;
+  accessToken: string;
+  refreshToken?: string;
+}
+
+export interface OtpRequiredAuthResult {
+  status: 'otp_required';
+  challengeId: string;
+}
+
+export type AuthServiceLoginResult = AuthenticatedAuthResult | OtpRequiredAuthResult;
+
 function getRequiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
@@ -57,6 +71,10 @@ function getRefreshPath(): string {
   return process.env.AUTH_SERVICE_REFRESH_PATH || '/api/auth/refresh';
 }
 
+function getOtpPath(): string {
+  return process.env.AUTH_SERVICE_OTP_PATH || '/api/auth/verify-otp';
+}
+
 function normalizeSession(rawSession: Partial<UserSession> | undefined): UserSession | null {
   if (!rawSession?.username || !rawSession?.name || !rawSession?.role) {
     return null;
@@ -79,7 +97,7 @@ export function isAuthServiceConfigured(): boolean {
   return Boolean(getBaseUrl());
 }
 
-export async function loginWithAuthService(username: string, password: string): Promise<{ session: UserSession; accessToken: string; refreshToken?: string }> {
+export async function loginWithAuthService(username: string, password: string): Promise<AuthServiceLoginResult> {
   const response = await fetch(buildUrl(getLoginPath()), {
     method: 'POST',
     headers: {
@@ -94,7 +112,14 @@ export async function loginWithAuthService(username: string, password: string): 
   }
 
   if (data.requiresOtp || data.requiresMfa) {
-    throw new Error('Login requer OTP/MFA para este perfil administrativo. Conclua o segundo fator no auth-service.');
+    if (!data.challengeId) {
+      throw new Error('O auth-service exigiu OTP/MFA sem devolver challengeId.');
+    }
+
+    return {
+      status: 'otp_required',
+      challengeId: data.challengeId
+    };
   }
 
   const accessToken = data.token || data.accessToken;
@@ -104,7 +129,41 @@ export async function loginWithAuthService(username: string, password: string): 
     throw new Error('Resposta invalida do auth-service durante o login.');
   }
 
-  return { session, accessToken, refreshToken: data.refreshToken };
+  return {
+    status: 'authenticated',
+    session,
+    accessToken,
+    refreshToken: data.refreshToken
+  };
+}
+
+export async function verifyOtpWithAuthService(challengeId: string, otp: string): Promise<AuthenticatedAuthResult> {
+  const response = await fetch(buildUrl(getOtpPath()), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ challengeId, otp })
+  });
+
+  const data = await parseJson<AuthServiceLoginResponse & { error?: string; message?: string }>(response);
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'Falha ao validar OTP/MFA no auth-service.');
+  }
+
+  const accessToken = data.token || data.accessToken;
+  const session = normalizeSession(data.session || data.user);
+
+  if (!accessToken || !session) {
+    throw new Error('Resposta invalida do auth-service durante a validacao de OTP/MFA.');
+  }
+
+  return {
+    status: 'authenticated',
+    session,
+    accessToken,
+    refreshToken: data.refreshToken
+  };
 }
 
 export async function fetchSessionFromAuthService(accessToken: string): Promise<UserSession | null> {

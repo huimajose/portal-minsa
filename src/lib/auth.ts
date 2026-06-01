@@ -8,6 +8,15 @@ interface LoginResponse {
   session: UserSession;
 }
 
+interface OtpChallengeResponse {
+  requiresOtp: true;
+  challengeId: string;
+}
+
+export type LoginResult =
+  | { status: 'authenticated'; session: UserSession }
+  | { status: 'otp_required'; challengeId: string };
+
 async function parseJson<T>(response: Response): Promise<T> {
   const data = (await response.json().catch(() => ({}))) as T & ApiErrorPayload;
 
@@ -18,7 +27,7 @@ async function parseJson<T>(response: Response): Promise<T> {
   return data;
 }
 
-export async function login(username: string, password: string): Promise<UserSession> {
+export async function login(username: string, password: string): Promise<LoginResult> {
   const response = await fetch('/api/auth/login', {
     method: 'POST',
     headers: {
@@ -26,6 +35,25 @@ export async function login(username: string, password: string): Promise<UserSes
     },
     credentials: 'same-origin',
     body: JSON.stringify({ username, password })
+  });
+
+  if (response.status === 202) {
+    const data = await parseJson<OtpChallengeResponse>(response);
+    return { status: 'otp_required', challengeId: data.challengeId };
+  }
+
+  const data = await parseJson<LoginResponse>(response);
+  return { status: 'authenticated', session: data.session };
+}
+
+export async function verifyOtp(challengeId: string, otp: string): Promise<UserSession> {
+  const response = await fetch('/api/auth/verify-otp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'same-origin',
+    body: JSON.stringify({ challengeId, otp })
   });
 
   const data = await parseJson<LoginResponse>(response);
