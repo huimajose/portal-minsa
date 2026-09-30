@@ -1,6 +1,6 @@
 export interface StatisticsOverview {
   population: { registered_patients: number };
-  network: { registered_organizations: number; active_nodes: number };
+  network: { registered_organizations: number; active_nodes: number | null };
   clinical_activity: { encounters: number; observations: number; conditions: number };
   top_conditions: { label: string; count: number }[];
   encounters_by_year: { year: number; count: number }[];
