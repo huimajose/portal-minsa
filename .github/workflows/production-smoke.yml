@@ -1,0 +1,24 @@
+name: Portal Production Smoke
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify deployed MINSA portal
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://portal-minsa.onrender.com"
+          for i in {1..30}; do
+            login=$(curl -sS -o /tmp/login.html -w "%{http_code}" "$base/login" || true)
+            if [ "$login" = "200" ]; then break; fi
+            sleep 10
+          done
+          test "$login" = "200"
+          stats=$(curl -sS -o /tmp/stats.json -w "%{http_code}" "$base/api/statistics/overview")
+          test "$stats" = "401"
