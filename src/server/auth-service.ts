@@ -224,9 +224,10 @@ export async function loginWithAuthService(username: string, password: string): 
   const response = await fetch(buildUrl(getLoginPath()), {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Portal-Client': 'regulator-portal'
     },
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ username, password, portal_client_id: 'regulator-portal' })
   });
 
   const data = await parseJson<AuthServiceLoginResponse & { error?: string; message?: string }>(response);
@@ -268,9 +269,10 @@ export async function verifyOtpWithAuthService(challengeId: string, otp: string)
   const response = await fetch(buildUrl(getOtpPath()), {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Portal-Client': 'regulator-portal'
     },
-    body: JSON.stringify({ identifier: challengeId, otp_code: otp })
+    body: JSON.stringify({ identifier: challengeId, otp_code: otp, portal_client_id: 'regulator-portal' })
   });
 
   const data = await parseJson<AuthServiceLoginResponse & { error?: string; message?: string }>(response);
