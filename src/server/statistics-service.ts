@@ -11,6 +11,9 @@ export interface StatisticsOverview {
       facility_code: string | null;
       province: string | null;
       municipality: string | null;
+      neighborhood: string | null;
+      latitude: number | null;
+      longitude: number | null;
     }[];
   };
   clinical_activity: { encounters: number; observations: number; conditions: number };
