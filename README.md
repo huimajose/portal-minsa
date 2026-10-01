@@ -52,3 +52,6 @@ The production dashboard uses `NationalStatisticsDashboard` and the server-side 
 Production smoke currently verifies the login page is reachable and that the statistics BFF rejects unauthenticated requests with 401. Demo-only modules without a validated national source are frozen instead of displaying synthetic values as real MINSA data.
 
 Final interactive acceptance requires an authorized MINSA account and OTP when enabled. After login, the expected chain is Portal MINSA → Statistics Service → Auth introspection → DBM statistics read endpoint → aggregate-only response.
+
+
+<!-- deployment trigger: Vercel production refresh after MINSA auth cookie fix -->
