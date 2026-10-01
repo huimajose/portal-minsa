@@ -1,6 +1,13 @@
 import PortalShell from '../src/components/PortalShell';
-import MvpUnavailable from '../src/components/MvpUnavailable';
+import UsersView from '../src/components/UsersView';
+import { usePortal } from '../src/context/PortalContext';
 
-export default function FrozenMvpPage() {
-  return <PortalShell currentView="dashboard"><MvpUnavailable title="Gestão de Utilizadores" /></PortalShell>;
+export default function UsersPage() {
+  const { userSession, usersListState } = usePortal();
+
+  return (
+    <PortalShell currentView="users">
+      <UsersView userSession={userSession} usersList={usersListState} />
+    </PortalShell>
+  );
 }

@@ -64,7 +64,13 @@ export default function Navigation({
   };
 
   const allowedMenuItems = [
-    { id: 'dashboard', label: 'Painel Estatistico', icon: Home }
+    { id: 'dashboard', label: 'Painel Estatistico', icon: Home },
+    { id: 'hospitals', label: 'Unidades Hospitalares', icon: Building2 },
+    { id: 'epidemiology', label: 'Vigilancia Epidemiologica', icon: Activity },
+    { id: 'reports', label: 'Despachos e Relatorios', icon: FileText },
+    ...(userSession && hasPermission(userSession, 'MANAGE_USERS')
+      ? [{ id: 'users', label: 'Gestao de Utilizadores', icon: UserCheck }]
+      : [])
   ];
 
   const criticalAlerts = alerts.filter((a) => a.alertLevel === 'Crítico' || a.alertLevel === 'Atenção');

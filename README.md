@@ -52,3 +52,15 @@ The production dashboard uses `NationalStatisticsDashboard` and the server-side 
 Production smoke currently verifies the login page is reachable and that the statistics BFF rejects unauthenticated requests with 401. Demo-only modules without a validated national source are frozen instead of displaying synthetic values as real MINSA data.
 
 Final interactive acceptance requires an authorized MINSA account and OTP when enabled. After login, the expected chain is Portal MINSA → Statistics Service → Auth introspection → DBM statistics read endpoint → aggregate-only response.
+
+
+## Portal MINSA modules restored — 2026-10-01
+
+The institutional navigation has been restored for Hospitals, Epidemiology, Reports and Users while the national dashboard remains backed by the real OSIE Statistics Service.
+
+Important data-governance rule for the MVP:
+- aggregate indicators shown as national OSIE data must come from the Statistics Service;
+- existing legacy demo datasets may only support clearly identified demonstration views and must never be presented as current national statistics;
+- geographic heatmaps, provincial treemaps, age distributions and similar analytics will be connected only when corresponding aggregate endpoints are available.
+
+The health-analytics-master repository was reviewed as a visualization reference. Useful patterns include thematic maps, treemaps, total/percentage switching, age-band charts and min/max/mean summaries. Its original US/Synthea datasets are not reused as OSIE production data.
