@@ -1,6 +1,8 @@
 import { UserSession } from '../types';
 
 const SESSION_COOKIE_NAME = 'minsa_session';
+const ACCESS_TOKEN_COOKIE_NAME = 'minsa_access';
+const REFRESH_TOKEN_COOKIE_NAME = 'minsa_refresh';
 const SESSION_TTL_SECONDS = 60 * 60;
 
 export interface SessionEnvelope {
@@ -99,14 +101,42 @@ export function getSessionCookieName(): string {
   return SESSION_COOKIE_NAME;
 }
 
+export function getAccessTokenCookieName(): string {
+  return ACCESS_TOKEN_COOKIE_NAME;
+}
+
+export function getRefreshTokenCookieName(): string {
+  return REFRESH_TOKEN_COOKIE_NAME;
+}
+
 export function serializeSessionCookie(token: string): string {
   const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
   return `${SESSION_COOKIE_NAME}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}${secure}`;
 }
 
-export function serializeExpiredSessionCookie(): string {
+function serializeHttpOnlyCookie(name: string, value: string, maxAge = SESSION_TTL_SECONDS): string {
   const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  return `${SESSION_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
+  return `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
+}
+
+export function serializeAccessTokenCookie(token: string): string {
+  return serializeHttpOnlyCookie(ACCESS_TOKEN_COOKIE_NAME, token);
+}
+
+export function serializeRefreshTokenCookie(token: string): string {
+  return serializeHttpOnlyCookie(REFRESH_TOKEN_COOKIE_NAME, token);
+}
+
+export function serializeExpiredSessionCookie(): string {
+  return serializeHttpOnlyCookie(SESSION_COOKIE_NAME, '', 0);
+}
+
+export function serializeExpiredAuthCookies(): string[] {
+  return [
+    serializeHttpOnlyCookie(SESSION_COOKIE_NAME, '', 0),
+    serializeHttpOnlyCookie(ACCESS_TOKEN_COOKIE_NAME, '', 0),
+    serializeHttpOnlyCookie(REFRESH_TOKEN_COOKIE_NAME, '', 0)
+  ];
 }
 
 export function readCookieValue(rawCookieHeader: string | undefined, cookieName: string): string | undefined {
