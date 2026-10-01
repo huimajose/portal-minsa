@@ -1,18 +1,3 @@
 import PortalShell from '../src/components/PortalShell';
-import NationalStatisticsDashboard from '../src/components/NationalStatisticsDashboard';
-import { usePortal } from '../src/context/PortalContext';
-
-export default function HospitalsPage() {
-  const { userSession } = usePortal();
-  if (!userSession) return null;
-
-  return (
-    <PortalShell currentView="hospitals">
-      <div className="mb-5">
-        <h1 className="text-2xl font-bold text-slate-900">Rede institucional OSIE</h1>
-        <p className="mt-1 text-sm text-slate-500">Consulta read-only das instituições e indicadores reais registados na rede. Operações clínicas permanecem nos sistemas hospitalares.</p>
-      </div>
-      <NationalStatisticsDashboard />
-    </PortalShell>
-  );
-}
+import NetworkDashboard from '../src/components/NetworkDashboard';
+export default function HospitalsPage(){return <PortalShell currentView="hospitals"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#004a99]">OSIE · Rede Nacional</p><h1 className="mt-1 text-2xl font-bold text-slate-900">Rede Hospitalar</h1><p className="mt-1 text-sm text-slate-500">Cobertura geográfica e diretório das instituições ligadas ao OSIE.</p></div><NetworkDashboard/></PortalShell>;}
