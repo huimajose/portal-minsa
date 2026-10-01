@@ -8,17 +8,23 @@ A navegação do MVP está organizada como um centro nacional de situação:
 
 - **Visão Nacional**: KPIs nacionais agregados.
 - **Rede Hospitalar**: mapa georreferenciado e diretório institucional real.
-- **Epidemiologia**: condições e atividade clínica agregadas, com filtro temporal suportado pela série real de encontros.
+- **Epidemiologia**: workbench nacional com mapa, seleção de indicador, Total/Percentagem, resumo Min/Máx/Média e gráficos agregados.
 - **Relatórios**: snapshot executivo exportável em PDF e CSV.
-- **Administração**: identidade, permissões e estado da cadeia de integração. O diretório de utilizadores permanece indisponível até existir endpoint administrativo autorizado no Auth Service.
+- **Administração**: identidade, permissões e estado da cadeia de integração.
 
 ## Regra de dados
 
-O portal não usa dados clínicos sintéticos em runtime. Indicadores nacionais devem vir do Statistics Service, que consulta o Database Manager com identidade de serviço e valida o utilizador MINSA no Auth Service.
+O portal não usa dados clínicos sintéticos em runtime. Indicadores nacionais vêm do Statistics Service, que consulta o Database Manager com identidade de serviço e valida o utilizador MINSA no Auth Service.
 
 Fluxo: **Portal MINSA → Statistics Service → Auth Service → Database Manager**.
 
 Nenhum registo clínico individual é exposto pelo dashboard ou pelos relatórios do MVP.
+
+## Epidemiologia
+
+O workbench mantém a composição preparada para heatmap territorial, treemap por província/município, distribuição por faixa etária, filtros de indicador/período, Total/Percentagem e Min/Máx/Média.
+
+Uma visualização só apresenta valores quando a dimensão correspondente existe no contrato analítico real. O mapa atual mostra instituições georreferenciadas. Treemap epidemiológico e distribuição etária permanecem explicitamente indisponíveis até o DBM fornecer agregados seguros para essas dimensões. O frontend não estima, replica ou inventa valores ausentes.
 
 ## Mapa institucional
 
@@ -37,12 +43,13 @@ npm run build
 npm run dev
 ```
 
-Variáveis de ambiente são descritas em `.env.example`. Tokens de acesso permanecem em cookies HttpOnly e não são entregues ao JavaScript do browser.
+Tokens de acesso permanecem em cookies HttpOnly e não são entregues ao JavaScript do browser.
 
-## Pendências pós-MVP
+## Próxima evolução analítica
 
 - substituir paginação de tabelas no Statistics Service por endpoints agregados dedicados no DBM;
+- agregar condições por província/município quando houver vínculo territorial clínico confiável;
+- agregar condições por faixas etárias quando a identidade clínica possuir a dimensão de nascimento necessária;
 - disponibilizar `active_nodes` pelo registry;
-- criar endpoint administrativo read-only no Auth Service para o diretório MINSA;
-- ampliar agregações epidemiológicas por geografia somente quando os campos de origem forem confiáveis;
+- criar endpoint administrativo read-only no Auth Service;
 - atualizar dependências Next.js após validação de compatibilidade.
