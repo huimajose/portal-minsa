@@ -1,17 +1,3 @@
 import PortalShell from '../src/components/PortalShell';
-import NationalStatisticsDashboard from '../src/components/NationalStatisticsDashboard';
-import { usePortal } from '../src/context/PortalContext';
-
-export default function EpidemiologyPage() {
-  const { userSession } = usePortal();
-  if (!userSession) return null;
-  return (
-    <PortalShell currentView="epidemiology">
-      <div className="mb-5">
-        <h1 className="text-2xl font-bold text-slate-900">Vigilância epidemiológica</h1>
-        <p className="mt-1 text-sm text-slate-500">Condições clínicas agregadas a partir dos registos reais disponíveis na rede OSIE. Sem identificação individual de pacientes.</p>
-      </div>
-      <NationalStatisticsDashboard />
-    </PortalShell>
-  );
-}
+import EpidemiologyDashboard from '../src/components/EpidemiologyDashboard';
+export default function EpidemiologyPage(){return <PortalShell currentView="epidemiology"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#004a99]">OSIE · Saúde Pública</p><h1 className="mt-1 text-2xl font-bold text-slate-900">Epidemiologia</h1><p className="mt-1 text-sm text-slate-500">Indicadores clínicos agregados para vigilância nacional, sem exposição de pacientes.</p></div><EpidemiologyDashboard/></PortalShell>;}
