@@ -30,6 +30,8 @@ interface AuthServiceProfileResponse {
 }
 
 interface DecodedTokenPayload {
+  role?: string | null;
+  scopes?: string[];
   identity_data?: {
     id?: number | string;
     username?: string;
@@ -173,13 +175,14 @@ function buildSessionFromSources(
 ): UserSession | null {
   const identity = decoded?.identity_data;
   const scopes = [
+    ...(Array.isArray(decoded?.scopes) ? decoded.scopes : []),
     ...(Array.isArray(identity?.scopes) ? identity.scopes : []),
     ...(Array.isArray(profile?.custom_scopes) ? profile.custom_scopes : [])
   ];
 
-  const username = profile?.username || identity?.username;
+  const username = profile?.username || identity?.username || decoded?.sub;
   const name = profile?.display_name || identity?.display_name || username;
-  const role = normalizeRole(identity?.role || profile?.role || profile?.user_type || identity?.user_type, scopes);
+  const role = normalizeRole(decoded?.role || identity?.role || profile?.role || profile?.user_type || identity?.user_type, scopes);
 
   if (!username || !name || !role) {
     return null;
