@@ -47,7 +47,7 @@ Tokens de acesso permanecem em cookies HttpOnly e não são entregues ao JavaScr
 
 ## Estado de release
 
-O MVP usa contrato agregado dedicado entre Statistics Service e DBM para contagens, diretório institucional, condições mais frequentes e encontros por ano. O Statistics Service não precisa carregar linhas clínicas individuais para produzir a visão nacional.
+O MVP usa contrato agregado dedicado entre Statistics Service e DBM para contagens, nodes OSIE ativos, diretório institucional, condições mais frequentes e encontros por ano. O Statistics Service não precisa carregar linhas clínicas individuais para produzir a visão nacional.
 
 A migration geográfica `021` e as coordenadas institucionais reais de HCL/HML suportam o mapa da rede. Componentes legados de simulação foram removidos do runtime e do repositório.
 
@@ -55,6 +55,5 @@ A migration geográfica `021` e as coordenadas institucionais reais de HCL/HML s
 
 - agregar condições por província/município quando houver vínculo territorial clínico confiável;
 - agregar condições por faixas etárias quando a identidade clínica possuir a dimensão de nascimento necessária;
-- disponibilizar `active_nodes` pelo registry;
 - criar endpoint administrativo read-only no Auth Service;
 - atualizar dependências Next.js após validação de compatibilidade.
