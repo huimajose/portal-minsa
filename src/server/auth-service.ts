@@ -13,6 +13,9 @@ interface AuthServiceLoginResponse {
   requiresMfa?: boolean;
   challengeId?: string;
   identifier?: string;
+  password_change_required?: boolean;
+  reset_token?: string;
+  message?: string;
 }
 
 interface AuthServiceProfileResponse {
@@ -52,7 +55,14 @@ export interface OtpRequiredAuthResult {
   challengeId: string;
 }
 
+export interface PasswordChangeRequiredAuthResult {
+  status: 'password_change_required';
+  resetToken: string;
+  message: string;
+}
+
 export type AuthServiceLoginResult = AuthenticatedAuthResult | OtpRequiredAuthResult;
+export type AuthServiceOtpResult = AuthenticatedAuthResult | PasswordChangeRequiredAuthResult;
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name];
@@ -265,7 +275,7 @@ export async function loginWithAuthService(username: string, password: string): 
   };
 }
 
-export async function verifyOtpWithAuthService(challengeId: string, otp: string): Promise<AuthenticatedAuthResult> {
+export async function verifyOtpWithAuthService(challengeId: string, otp: string): Promise<AuthServiceOtpResult> {
   const response = await fetch(buildUrl(getOtpPath()), {
     method: 'POST',
     headers: {
@@ -278,6 +288,17 @@ export async function verifyOtpWithAuthService(challengeId: string, otp: string)
   const data = await parseJson<AuthServiceLoginResponse & { error?: string; message?: string }>(response);
   if (!response.ok) {
     throw new Error(data.error || data.message || 'Falha ao validar OTP/MFA no auth-service.');
+  }
+
+  if (data.password_change_required) {
+    if (!data.reset_token) {
+      throw new Error('O auth-service exigiu alteracao de password sem devolver token de redefinicao.');
+    }
+    return {
+      status: 'password_change_required',
+      resetToken: data.reset_token,
+      message: data.message || 'Defina uma nova palavra-passe para concluir o primeiro acesso.'
+    };
   }
 
   const accessToken = data.token || data.accessToken || data.access_token;
@@ -358,4 +379,17 @@ export async function refreshSessionWithAuthService(
     accessToken,
     refreshToken: data.refreshToken || data.refresh_token || refreshToken
   };
+}
+
+
+export async function resetPasswordWithAuthService(resetToken: string, newPassword: string): Promise<void> {
+  const response = await fetch(buildUrl(`/auth/reset-password/${encodeURIComponent(resetToken)}`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Portal-Client': 'regulator-portal' },
+    body: JSON.stringify({ new_password: newPassword })
+  });
+  const data = await parseJson<{ error?: string; message?: string }>(response);
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'Falha ao definir a nova palavra-passe.');
+  }
 }

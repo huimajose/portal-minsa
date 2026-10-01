@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, User, Eye, EyeOff, KeyRound, HelpCircle, Layers } from 'lucide-react';
-import { login, verifyOtp } from '../lib/auth';
+import { changePassword, login, verifyOtp } from '../lib/auth';
 import { UserSession } from '../types';
 
 interface LoginProps {
@@ -18,10 +18,14 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpChallengeId, setOtpChallengeId] = useState<string | null>(null);
+  const [resetToken, setResetToken] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isOtpStep = Boolean(otpChallengeId);
+  const isOtpStep = Boolean(otpChallengeId) && !resetToken;
+  const isPasswordChangeStep = Boolean(resetToken);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,9 +33,30 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     setErrorMsg(null);
 
     try {
+      if (isPasswordChangeStep && resetToken) {
+        if (newPassword.length < 8) throw new Error('A nova palavra-passe deve ter pelo menos 8 caracteres.');
+        if (newPassword !== confirmPassword) throw new Error('As palavras-passe nao coincidem.');
+        await changePassword(resetToken, newPassword);
+        setResetToken(null);
+        setOtpChallengeId(null);
+        setOtpCode('');
+        setPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setErrorMsg('Palavra-passe alterada. Entre novamente com a nova palavra-passe.');
+        setIsSubmitting(false);
+        return;
+      }
+
       if (isOtpStep && otpChallengeId) {
-        const session = await verifyOtp(otpChallengeId, otpCode);
-        onLoginSuccess(session);
+        const result = await verifyOtp(otpChallengeId, otpCode);
+        if (result.status === 'password_change_required') {
+          setResetToken(result.resetToken);
+          setOtpCode('');
+          setIsSubmitting(false);
+          return;
+        }
+        onLoginSuccess(result.session);
         return;
       }
 
@@ -80,13 +105,19 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           <div className="flex items-center gap-2 pb-4 border-b border-white/10">
             <ShieldCheck className="w-5 h-5 text-sky-400" />
             <span className="text-sm font-bold text-slate-100">
-              {isOtpStep ? 'Validacao do segundo fator' : 'Autenticacao de acesso via backend'}
+              {isPasswordChangeStep ? 'Definir nova palavra-passe' : isOtpStep ? 'Validacao do segundo fator' : 'Autenticacao de acesso via backend'}
             </span>
           </div>
 
           {errorMsg && (
             <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-300 font-medium leading-relaxed animate-fade-in mb-2">
               {errorMsg}
+            </div>
+          )}
+
+          {isPasswordChangeStep && (
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-100 font-medium leading-relaxed animate-fade-in">
+              A palavra-passe temporaria foi aceite. Defina uma nova palavra-passe para concluir o primeiro acesso.
             </div>
           )}
 
@@ -97,7 +128,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isOtpStep ? (
+            {!isOtpStep && !isPasswordChangeStep ? (
               <>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
@@ -146,6 +177,21 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                   </div>
                 </div>
               </>
+            ) : isPasswordChangeStep ? (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nova palavra-passe</label>
+                  <input type="password" autoComplete="new-password" required minLength={8} value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:ring-2 focus:ring-sky-500/50" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Confirmar nova palavra-passe</label>
+                  <input type="password" autoComplete="new-password" required minLength={8} value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:ring-2 focus:ring-sky-500/50" />
+                </div>
+              </div>
             ) : (
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
@@ -184,12 +230,12 @@ export default function Login({ onLoginSuccess }: LoginProps) {
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>{isOtpStep ? 'A validar segundo fator...' : 'A autenticar sessao segura...'}</span>
+                  <span>{isPasswordChangeStep ? 'A guardar nova palavra-passe...' : isOtpStep ? 'A validar segundo fator...' : 'A autenticar sessao segura...'}</span>
                 </>
               ) : (
                 <>
                   <KeyRound className="w-4 h-4" />
-                  <span>{isOtpStep ? 'Validar OTP e Entrar' : 'Entrar no Sistema'}</span>
+                  <span>{isPasswordChangeStep ? 'Definir palavra-passe' : isOtpStep ? 'Validar OTP e Entrar' : 'Entrar no Sistema'}</span>
                 </>
               )}
             </button>
