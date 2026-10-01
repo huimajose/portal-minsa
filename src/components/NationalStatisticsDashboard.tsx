@@ -51,6 +51,28 @@ export default function NationalStatisticsDashboard() {
       </div>)}
     </div>
 
+    <section className="glass-panel rounded-2xl p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="font-bold text-slate-800">Instituições OSIE registadas</h2>
+          <p className="mt-1 text-xs text-slate-500">Diretório real fornecido pelo Database Manager através do Statistics Service.</p>
+        </div>
+        <Building2 className="h-5 w-5 text-[#004a99]" />
+      </div>
+      <div className="mt-4 overflow-x-auto">
+        {data?.network.organizations?.length ? <table className="w-full text-left text-sm">
+          <thead><tr className="border-b border-slate-200 text-xs uppercase text-slate-500"><th className="py-2 pr-4">Instituição</th><th className="py-2 pr-4">Código</th><th className="py-2 pr-4">Tipo</th><th className="py-2 pr-4">Estado</th><th className="py-2">Localização</th></tr></thead>
+          <tbody>{data.network.organizations.map((org) => <tr key={org.id} className="border-b border-slate-100">
+            <td className="py-3 pr-4 font-semibold text-slate-800">{org.name}</td>
+            <td className="py-3 pr-4 font-mono text-xs text-slate-600">{org.facility_code || '—'}</td>
+            <td className="py-3 pr-4">{org.type || '—'}</td>
+            <td className="py-3 pr-4">{org.status || '—'}</td>
+            <td className="py-3">{[org.municipality, org.province].filter(Boolean).join(', ') || 'Não disponível no registo'}</td>
+          </tr>)}</tbody>
+        </table> : <p className="text-sm text-slate-500">{loading ? 'A carregar…' : 'Nenhuma instituição disponível no registo OSIE.'}</p>}
+      </div>
+    </section>
+
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
       <section className="glass-panel rounded-2xl p-5">
         <h2 className="font-bold text-slate-800">Condições mais registadas</h2>
