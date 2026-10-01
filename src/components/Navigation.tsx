@@ -63,18 +63,8 @@ export default function Navigation({
     }
   };
 
-  const menuItems = [
-    { id: 'dashboard', label: 'Painel Estatistico', icon: Home },
-    { id: 'hospitals', label: 'Unidades Hospitalares', icon: Building2 },
-    { id: 'epidemiology', label: 'Vigilancia Epidemiologica', icon: Activity },
-    { id: 'reports', label: 'Despachos & Relatorios', icon: FileText }
-  ];
-
   const allowedMenuItems = [
-    ...menuItems,
-    ...(userSession && hasPermission(userSession, 'MANAGE_USERS')
-      ? [{ id: 'users', label: 'Gestao de Utilizadores', icon: UserCheck }]
-      : [])
+    { id: 'dashboard', label: 'Painel Estatistico', icon: Home }
   ];
 
   const criticalAlerts = alerts.filter((a) => a.alertLevel === 'Crítico' || a.alertLevel === 'Atenção');
