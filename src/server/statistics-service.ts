@@ -7,9 +7,10 @@ export interface StatisticsOverview {
   privacy: { aggregation: string; contains_patient_records: boolean };
 }
 
+const PRODUCTION_STATISTICS_SERVICE_URL = 'https://statistic-service-ryl5.onrender.com';
+
 function getBaseUrl(): string {
-  const value = process.env.STATISTICS_SERVICE_BASE_URL;
-  if (!value) throw new Error('STATISTICS_SERVICE_BASE_URL is not configured.');
+  const value = process.env.STATISTICS_SERVICE_BASE_URL || PRODUCTION_STATISTICS_SERVICE_URL;
   return value.replace(/\/$/, '');
 }
 
