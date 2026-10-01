@@ -1,20 +1,6 @@
 import PortalShell from '../src/components/PortalShell';
-import EpidemiologyView from '../src/components/EpidemiologyView';
-import { usePortal } from '../src/context/PortalContext';
+import MvpUnavailable from '../src/components/MvpUnavailable';
 
-export default function EpidemiologyPage() {
-  const portal = usePortal();
-
-  return (
-    <PortalShell currentView="epidemiology">
-      <EpidemiologyView
-        diseaseMetrics={portal.diseaseMetricsState}
-        alerts={portal.alertsState}
-        selectedProvince={portal.selectedProvince}
-        onSelectProvince={portal.setSelectedProvince}
-        userRole={portal.userSession?.role ?? 'VISUALIZADOR'}
-        onAddAlert={portal.handleAddAlert}
-      />
-    </PortalShell>
-  );
+export default function FrozenMvpPage() {
+  return <PortalShell currentView="dashboard"><MvpUnavailable title="Vigilância Epidemiológica" /></PortalShell>;
 }

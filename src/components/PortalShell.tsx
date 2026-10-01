@@ -21,8 +21,7 @@ export default function PortalShell({ currentView, children }: PortalShellProps)
     userSession,
     isSessionLoading,
     handleLogout,
-    setSelectedProvince,
-    alertsState
+    setSelectedProvince
   } = usePortal();
 
   useEffect(() => {
@@ -65,7 +64,7 @@ export default function PortalShell({ currentView, children }: PortalShellProps)
         onSetView={handleRouteChange}
         userSession={userSession}
         onLogout={handleLogout}
-        alerts={alertsState}
+        alerts={[]}
         onSelectProvince={handleProvinceSelect}
         isTopBar={true}
       />
