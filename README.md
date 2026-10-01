@@ -43,3 +43,12 @@ Aplicacao migrada para Next.js com roteamento por paginas.
 - Ha suporte para refresh e rotacao de sessao quando o `auth-service` expuser `AUTH_SERVICE_REFRESH_PATH`.
 - Perfis que exigem OTP/MFA podem concluir o segundo fator pela UI de login quando o `auth-service` expuser `AUTH_SERVICE_OTP_PATH`.
 - Login, logout, leitura de sessao e operacoes protegidas emitem logs de auditoria no backend.
+
+
+## OSIE MVP v1.0 status — 2026-10-01
+
+The production dashboard uses `NationalStatisticsDashboard` and the server-side `/api/statistics/overview` BFF. The browser never receives the Auth Service access token directly. The BFF forwards the HttpOnly-session access token to the Statistics Service, which enforces `statistics:read` through centralized Auth introspection.
+
+Production smoke currently verifies the login page is reachable and that the statistics BFF rejects unauthenticated requests with 401. Demo-only modules without a validated national source are frozen instead of displaying synthetic values as real MINSA data.
+
+Final interactive acceptance requires an authorized MINSA account and OTP when enabled. After login, the expected chain is Portal MINSA → Statistics Service → Auth introspection → DBM statistics read endpoint → aggregate-only response.
