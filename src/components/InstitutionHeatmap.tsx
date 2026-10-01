@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react';
-import L from 'leaflet';
 import type { StatisticsOverview } from '../server/statistics-service';
 
 type Organization = StatisticsOverview['network']['organizations'][number];
 
 export default function InstitutionHeatmap({ organizations }: { organizations: Organization[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<L.Map | null>(null);
+  const mapRef = useRef<any>(null);
 
   const located = useMemo(
     () => organizations.filter((org) => Number.isFinite(org.latitude) && Number.isFinite(org.longitude)),
@@ -15,7 +14,11 @@ export default function InstitutionHeatmap({ organizations }: { organizations: O
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, {
+    let cancelled = false;
+    let localMap: any = null;
+    void import('leaflet').then(({ default: L }) => {
+      if (cancelled || !containerRef.current || mapRef.current) return;
+      const map = L.map(containerRef.current, {
       center: [-12.5, 17.5],
       zoom: 5,
       minZoom: 4,
@@ -25,9 +28,12 @@ export default function InstitutionHeatmap({ organizations }: { organizations: O
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
-    mapRef.current = map;
+      mapRef.current = map;
+      localMap = map;
+    });
     return () => {
-      map.remove();
+      cancelled = true;
+      if (localMap) localMap.remove();
       mapRef.current = null;
     };
   }, []);
@@ -35,8 +41,11 @@ export default function InstitutionHeatmap({ organizations }: { organizations: O
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    const layer = L.layerGroup().addTo(map);
-    for (const org of located) {
+    let layer: any = null;
+    void import('leaflet').then(({ default: L }) => {
+      if (!mapRef.current) return;
+      layer = L.layerGroup().addTo(map);
+      for (const org of located) {
       const lat = Number(org.latitude);
       const lng = Number(org.longitude);
       const location = [org.neighborhood, org.municipality, org.province].filter(Boolean).join(', ');
@@ -47,13 +56,14 @@ export default function InstitutionHeatmap({ organizations }: { organizations: O
       }).bindPopup(
         `<strong>${org.name}</strong><br/>${org.facility_code || ''}<br/>${location || 'Localização administrativa não disponível'}`
       ).addTo(layer);
-    }
-    if (located.length === 1) map.setView([Number(located[0].latitude), Number(located[0].longitude)], 8);
+      }
+      if (located.length === 1) map.setView([Number(located[0].latitude), Number(located[0].longitude)], 8);
     if (located.length > 1) {
       const bounds = L.latLngBounds(located.map((org) => [Number(org.latitude), Number(org.longitude)] as [number, number]));
-      map.fitBounds(bounds.pad(0.35));
-    }
-    return () => { layer.remove(); };
+        map.fitBounds(bounds.pad(0.35));
+      }
+    });
+    return () => { if (layer) layer.remove(); };
   }, [located]);
 
   return (
