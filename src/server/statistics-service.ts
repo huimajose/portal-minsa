@@ -43,3 +43,17 @@ export async function fetchStatisticsOverview(accessToken: string): Promise<Stat
   }
   return data;
 }
+
+
+export interface StatisticsReadiness {
+  status: string;
+  auth: string;
+  database_manager: string;
+}
+
+export async function fetchStatisticsReadiness(): Promise<StatisticsReadiness> {
+  const response = await fetch(`${getBaseUrl()}/ready`, { method: 'GET', cache: 'no-store' });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error('Statistics dependencies unavailable.');
+  return body as StatisticsReadiness;
+}
