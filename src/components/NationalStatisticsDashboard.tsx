@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Activity, Building2, ClipboardList, Database, HeartPulse, Users } from 'lucide-react';
 import { fetchStatisticsOverview } from '../lib/statistics';
 import type { StatisticsOverview } from '../server/statistics-service';
+import InstitutionHeatmap from './InstitutionHeatmap';
 
 const fmt = (value: number | null | undefined) => value == null ? '—' : value.toLocaleString('pt-AO');
 
@@ -50,6 +51,8 @@ export default function NationalStatisticsDashboard() {
         {label === 'Nodes ativos' && value == null && !loading && <p className="mt-2 text-xs text-slate-500">Indicador aguardando endpoint agregado do registry.</p>}
       </div>)}
     </div>
+
+    <InstitutionHeatmap organizations={data?.network.organizations || []} />
 
     <section className="glass-panel rounded-2xl p-5">
       <div className="flex items-center justify-between gap-4">
