@@ -19,7 +19,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { session, accessToken, refreshToken } = await verifyOtpWithAuthService(challengeId, otp);
+    const result = await verifyOtpWithAuthService(challengeId, otp);
+    if (result.status === 'password_change_required') {
+      auditEvent({
+        action: 'auth.password.change.required',
+        status: 'success',
+        request: req,
+        details: { provider: 'auth-service', challengeId }
+      });
+      return res.status(202).json({
+        passwordChangeRequired: true,
+        resetToken: result.resetToken,
+        message: result.message
+      });
+    }
+
+    const { session, accessToken, refreshToken } = result;
     const token = await createSessionToken(session, accessToken, refreshToken);
     res.setHeader('Set-Cookie', serializeSessionCookie(token));
     auditEvent({
