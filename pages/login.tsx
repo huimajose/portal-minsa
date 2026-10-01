@@ -26,7 +26,6 @@ export default function LoginPage() {
       <Login
         onLoginSuccess={(session) => {
           handleLoginSuccess(session);
-          void router.push('/dashboard');
         }}
       />
     </div>
