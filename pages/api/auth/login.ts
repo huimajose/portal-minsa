@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { authenticateDemoUser } from '../../../src/server/auth-users';
 import { auditEvent } from '../../../src/server/audit';
 import { isAuthServiceConfigured, loginWithAuthService } from '../../../src/server/auth-service';
-import { createSessionToken, serializeSessionCookie } from '../../../src/server/session';
+import { createSessionToken, serializeAccessTokenCookie, serializeRefreshTokenCookie, serializeSessionCookie } from '../../../src/server/session';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -29,8 +29,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const { session, accessToken, refreshToken } = result;
-      const token = await createSessionToken(session, accessToken, refreshToken);
-      res.setHeader('Set-Cookie', serializeSessionCookie(token));
+      const token = await createSessionToken(session);
+      res.setHeader('Set-Cookie', [
+        serializeSessionCookie(token),
+        serializeAccessTokenCookie(accessToken),
+        ...(refreshToken ? [serializeRefreshTokenCookie(refreshToken)] : [])
+      ]);
       auditEvent({ action: 'auth.login', status: 'success', session, request: req, details: { provider: 'auth-service' } });
       return res.status(200).json({ session });
     }
