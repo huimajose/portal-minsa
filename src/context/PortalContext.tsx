@@ -1,8 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { MOCK_HOSPITALS, MOCK_DISEASE_METRICS, MOCK_EPIDEMIOLOGICAL_ALERTS, getDynamicStats } from '../data/mockData';
+import { getDynamicStats } from '../data/mockData';
 import { UserSession, Hospital, EpidemiologicalAlert, DiseaseMetric } from '../types';
 import { hasPermission } from '../components/RoleGuard';
-import { DEMO_USER_DIRECTORY } from '../lib/demo-users';
 import { createAlertRequest, createPatientAdmissionRequest, fetchSession, logout } from '../lib/auth';
 import { SecureAction } from '../lib/permissions';
 
@@ -56,10 +55,10 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   const [selectedMunicipality, setSelectedMunicipality] = useState('All');
   const [dateRangeStart, setDateRangeStart] = useState('2026-05-01');
   const [dateRangeEnd, setDateRangeEnd] = useState('2026-05-28');
-  const [hospitalsState, setHospitalsState] = useState<Hospital[]>(MOCK_HOSPITALS);
-  const [alertsState, setAlertsState] = useState<EpidemiologicalAlert[]>(MOCK_EPIDEMIOLOGICAL_ALERTS);
-  const [diseaseMetricsState, setDiseaseMetricsState] = useState<DiseaseMetric[]>(MOCK_DISEASE_METRICS);
-  const [usersListState] = useState<ManagedUser[]>(DEMO_USER_DIRECTORY);
+  const [hospitalsState, setHospitalsState] = useState<Hospital[]>([]);
+  const [alertsState, setAlertsState] = useState<EpidemiologicalAlert[]>([]);
+  const [diseaseMetricsState, setDiseaseMetricsState] = useState<DiseaseMetric[]>([]);
+  const [usersListState] = useState<ManagedUser[]>([]);
 
   useEffect(() => {
     let isMounted = true;
