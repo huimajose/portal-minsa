@@ -46,7 +46,11 @@ export async function login(username: string, password: string): Promise<LoginRe
   return { status: 'authenticated', session: data.session };
 }
 
-export async function verifyOtp(challengeId: string, otp: string): Promise<UserSession> {
+export type VerifyOtpResult =
+  | { status: 'authenticated'; session: UserSession }
+  | { status: 'password_change_required'; resetToken: string; message: string };
+
+export async function verifyOtp(challengeId: string, otp: string): Promise<VerifyOtpResult> {
   const response = await fetch('/api/auth/verify-otp', {
     method: 'POST',
     headers: {
@@ -56,8 +60,23 @@ export async function verifyOtp(challengeId: string, otp: string): Promise<UserS
     body: JSON.stringify({ challengeId, otp })
   });
 
+  if (response.status === 202) {
+    const data = await parseJson<{ passwordChangeRequired: true; resetToken: string; message: string }>(response);
+    return { status: 'password_change_required', resetToken: data.resetToken, message: data.message };
+  }
+
   const data = await parseJson<LoginResponse>(response);
-  return data.session;
+  return { status: 'authenticated', session: data.session };
+}
+
+export async function changePassword(resetToken: string, newPassword: string): Promise<void> {
+  const response = await fetch('/api/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify({ resetToken, newPassword })
+  });
+  await parseJson<{ success: boolean }>(response);
 }
 
 export async function fetchSession(): Promise<UserSession | null> {
