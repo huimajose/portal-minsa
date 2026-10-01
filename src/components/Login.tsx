@@ -44,7 +44,6 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         setNewPassword('');
         setConfirmPassword('');
         setErrorMsg('Palavra-passe alterada. Entre novamente com a nova palavra-passe.');
-        setIsSubmitting(false);
         return;
       }
 
@@ -64,13 +63,13 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       if (result.status === 'otp_required') {
         setOtpChallengeId(result.challengeId);
         setOtpCode('');
-        setIsSubmitting(false);
         return;
       }
 
       onLoginSuccess(result.session);
     } catch (error) {
       setErrorMsg(error instanceof Error ? error.message : 'Falha ao autenticar com o servico.');
+    } finally {
       setIsSubmitting(false);
     }
   };
