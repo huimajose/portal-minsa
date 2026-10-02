@@ -48,6 +48,6 @@ export default function InstitutionHeatmap({ organizations, compact = false }: {
 
   return <section className="glass-panel overflow-hidden rounded-2xl">
     {!compact && <div className="flex flex-col gap-2 p-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#004a99]">Cobertura nacional</p><h2 className="mt-1 text-lg font-bold text-slate-900">Mapa da rede hospitalar</h2><p className="mt-1 text-xs text-slate-500">Explore as instituições por localização.</p></div><span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{located.length} de {organizations.length} georreferenciadas</span></div>}
-    {located.length ? <div ref={containerRef} className={`${compact?'h-[280px]':'h-[380px] sm:h-[420px]'} w-full ${compact?'':'border-t border-slate-200'} bg-slate-100`} /> : <div className="m-5 flex h-52 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 text-center text-sm text-slate-500">Ainda não existem instituições georreferenciadas.</div>}
+    {located.length ? <div ref={containerRef} className={`${compact?'h-[260px]':'h-[260px] sm:h-[320px]'} w-full ${compact?'':'border-t border-slate-200'} bg-slate-100`} /> : <div className="m-5 flex h-52 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 text-center text-sm text-slate-500">Ainda não existem instituições georreferenciadas.</div>}
   </section>;
 }
