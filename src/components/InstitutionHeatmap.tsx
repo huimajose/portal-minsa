@@ -3,6 +3,8 @@ import type { StatisticsOverview } from '../server/statistics-service';
 
 type Organization = StatisticsOverview['network']['organizations'][number];
 
+const ANGOLA_BOUNDS: [[number, number], [number, number]] = [[-18.2, 11.4], [-4.2, 24.2]];
+
 const text = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char] || char));
 
 export default function InstitutionHeatmap({ organizations, compact = false }: { organizations: Organization[]; compact?: boolean }) {
@@ -17,8 +19,9 @@ export default function InstitutionHeatmap({ organizations, compact = false }: {
     let localMap: any = null;
     void import('leaflet').then(({ default: L }) => {
       if (cancelled || !containerRef.current || mapRef.current) return;
-      localMap = L.map(containerRef.current, { center: [-12.5,17.5], zoom: 5, minZoom: 4, maxZoom: 15, scrollWheelZoom: true });
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(localMap);
+      localMap = L.map(containerRef.current, { center: [-12.5, 17.5], zoom: 5, minZoom: 5, maxZoom: 15, scrollWheelZoom: true, maxBounds: ANGOLA_BOUNDS, maxBoundsViscosity: 1.0 });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', bounds: ANGOLA_BOUNDS, noWrap: true }).addTo(localMap);
+      localMap.fitBounds(ANGOLA_BOUNDS, { padding: [8, 8] });
       mapRef.current = localMap;
       setMapReady(true);
       window.setTimeout(() => localMap?.invalidateSize(), 0);
@@ -39,8 +42,7 @@ export default function InstitutionHeatmap({ organizations, compact = false }: {
           .bindPopup(`<strong>${text(org.name)}</strong><br/>${text(org.facility_code)}<br/>${text(location || 'Localização não disponível')}`)
           .addTo(layer);
       });
-      if (located.length === 1) map.setView([Number(located[0].latitude),Number(located[0].longitude)], 8);
-      if (located.length > 1) map.fitBounds(L.latLngBounds(located.map((org) => [Number(org.latitude),Number(org.longitude)] as [number,number])).pad(.3));
+      map.fitBounds(ANGOLA_BOUNDS, { padding: [8, 8] });
       window.setTimeout(() => map.invalidateSize(), 0);
     });
     return () => { if (layer) layer.remove(); };
