@@ -113,3 +113,36 @@ html, body {
     display: none !important;
   }
 }
+
+
+/* OSIE territorial situation map */
+.osie-map-north {
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  padding: 7px 8px 6px;
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  color: #0f4c81;
+  backdrop-filter: blur(8px);
+}
+.osie-map-north span { font-size: 15px; line-height: 1; }
+.osie-map-north strong { margin-top: 2px; font-size: 10px; letter-spacing: .08em; }
+.leaflet-control-scale-line {
+  border: 0 !important;
+  border-bottom: 2px solid #0f4c81 !important;
+  background: rgba(255,255,255,.88) !important;
+  color: #0f3b63 !important;
+  font-weight: 700;
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 4px 14px rgba(15,23,42,.08);
+}
+.leaflet-control-zoom {
+  overflow: hidden;
+  border: 1px solid rgba(148,163,184,.38) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,.1) !important;
+}
+.leaflet-control-zoom a { color: #0f4c81 !important; }
