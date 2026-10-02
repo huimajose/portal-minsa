@@ -24,7 +24,7 @@ export default function EpidemiologyDashboard() {
   },[data,condition,mode,totalConditions]);
 
   return <div className="space-y-5">
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:w-1/2">
       <div className="flex flex-col border-b border-slate-200 lg:flex-row lg:items-center">
         <div className="flex shrink-0 items-center gap-2 border-b px-3 py-2.5 lg:border-b-0 lg:border-r"><SlidersHorizontal className="h-4 w-4 text-[#004a99]"/><strong className="text-sm">Registos clínicos agregados</strong></div>
         <div className="grid flex-1 gap-2 px-3 py-2 sm:grid-cols-3">
