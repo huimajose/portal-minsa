@@ -122,7 +122,16 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
     });
 
     return () => { cancelled = true; if (localMap) localMap.remove(); mapRef.current = null; provinceLayerRef.current = null; };
-  }, [compact, located, mode, conditionFilter, provinceMetrics, maxRecords]);
+  }, [compact, located]);
+
+  useEffect(() => {
+    const layer = provinceLayerRef.current;
+    if (!layer) return;
+    layer.eachLayer((item: any) => {
+      const name = String(item.feature?.properties?.PROVINCIA || '');
+      item.setStyle?.({ fillColor: normalize(selected?.name) === normalize(name) ? '#60a5fa' : fillForProvince(name), weight: normalize(selected?.name) === normalize(name) ? 2 : 1.5, fillOpacity: 1 });
+    });
+  }, [mode, conditionFilter, provinceMetrics, maxRecords, selected]);
 
   const resetMap = () => {
     const map = mapRef.current;
