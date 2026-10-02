@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Activity, CalendarDays, HeartPulse, SlidersHorizontal } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { fetchStatisticsOverview } from '../lib/statistics';
 import type { StatisticsOverview } from '../server/statistics-service';
@@ -26,7 +25,7 @@ export default function EpidemiologyDashboard() {
   return <div className="space-y-5">
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:w-1/2">
       <div className="flex flex-col border-b border-slate-200 lg:flex-row lg:items-center">
-        <div className="flex shrink-0 items-center gap-2 border-b px-3 py-2.5 lg:border-b-0 lg:border-r"><SlidersHorizontal className="h-4 w-4 text-[#004a99]"/><strong className="text-sm">Registos clínicos agregados</strong></div>
+        <div className="flex shrink-0 items-center gap-2 border-b px-3 py-2.5 lg:border-b-0 lg:border-r"><strong className="text-sm">Registos clínicos agregados</strong></div>
         <div className="grid flex-1 gap-2 px-3 py-2 sm:grid-cols-3">
           <label className="text-xs font-semibold text-slate-500">Indicador<select value={condition} onChange={(e)=>setCondition(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800"><option value="all">Todas as condições</option>{data?.top_conditions.map((x)=><option key={x.label} value={x.label}>{x.label}</option>)}</select></label>
           <label className="text-xs font-semibold text-slate-500">Período<select value={year} onChange={(e)=>setYear(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-800"><option value="all">Todo o histórico</option>{years.map((y)=><option key={y}>{y}</option>)}</select></label>
@@ -39,9 +38,9 @@ export default function EpidemiologyDashboard() {
     </section>
     {error&&<div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
     <div className="grid gap-4 sm:grid-cols-3">
-      <div className="glass-card rounded-2xl p-5"><HeartPulse className="h-5 w-5 text-[#004a99]"/><p className="mt-3 text-xs font-bold uppercase text-slate-500">Condições</p><strong className="mt-1 block text-3xl">{data?.clinical_activity.conditions??'…'}</strong></div>
-      <div className="glass-card rounded-2xl p-5"><Activity className="h-5 w-5 text-[#004a99]"/><p className="mt-3 text-xs font-bold uppercase text-slate-500">Encontros {year==='all'?'':'em '+year}</p><strong className="mt-1 block text-3xl">{encounters??'…'}</strong></div>
-      <div className="glass-card rounded-2xl p-5"><CalendarDays className="h-5 w-5 text-[#004a99]"/><p className="mt-3 text-xs font-bold uppercase text-slate-500">Observações</p><strong className="mt-1 block text-3xl">{data?.clinical_activity.observations??'…'}</strong></div>
+      <div className="glass-card rounded-2xl p-5"><p className="text-xs font-bold uppercase text-slate-500">Condições</p><strong className="mt-1 block text-3xl">{data?.clinical_activity.conditions??'…'}</strong></div>
+      <div className="glass-card rounded-2xl p-5"><p className="text-xs font-bold uppercase text-slate-500">Encontros {year==='all'?'':'em '+year}</p><strong className="mt-1 block text-3xl">{encounters??'…'}</strong></div>
+      <div className="glass-card rounded-2xl p-5"><p className="text-xs font-bold uppercase text-slate-500">Observações</p><strong className="mt-1 block text-3xl">{data?.clinical_activity.observations??'…'}</strong></div>
     </div>
   </div>;
 }
