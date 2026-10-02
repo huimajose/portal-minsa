@@ -13,10 +13,12 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const provinceLayerRef = useRef<any>(null);
+  const selectedProvinceRef = useRef<string | null>(null);
   const [selected, setSelected] = useState<ProvinceInfo | null>(null);
   const [mapError, setMapError] = useState(false);
   const [mode, setMode] = useState<MapMode>('network');
   const [conditionFilter, setConditionFilter] = useState<string>('all');
+  useEffect(() => { selectedProvinceRef.current = selected?.name || null; }, [selected]);
   const located = useMemo(() => organizations.filter((org) => Number.isFinite(Number(org.latitude)) && Number.isFinite(Number(org.longitude))), [organizations]);
   const conditionOptions = useMemo(() => Array.from(new Set(territorial.map((row) => row.condition).filter(Boolean))).sort(), [territorial]);
   const provinceMetrics = useMemo(() => {
@@ -79,7 +81,12 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
 
     void import('leaflet').then(async ({ default: L }) => {
       if (cancelled || !containerRef.current || mapRef.current) return;
-      localMap = L.map(containerRef.current, { center: [-12.5, 17.5], zoom: 5, minZoom: 5, maxZoom: 11, scrollWheelZoom: true, attributionControl: false });
+      localMap = L.map(containerRef.current, { center: [-12.5, 17.5], zoom: 5, minZoom: 5, maxZoom: 11, scrollWheelZoom: true, attributionControl: false, zoomControl: true });
+      containerRef.current.style.background = 'radial-gradient(circle at 34% 42%, #f8fbff 0%, #e8f3fb 42%, #d7eaf6 72%, #c7e0ee 100%)';
+      L.control.scale({ imperial: false, position: 'bottomleft', maxWidth: 120 }).addTo(localMap);
+      const north = new L.Control({ position: 'topright' });
+      north.onAdd = () => { const el = L.DomUtil.create('div', 'osie-map-north'); el.innerHTML = '<span>▲</span><strong>N</strong>'; el.title = 'Norte'; return el; };
+      north.addTo(localMap);
       mapRef.current = localMap;
 
       try {
@@ -89,18 +96,18 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
         if (cancelled || !mapRef.current) return;
 
         const layer = L.geoJSON(geojson, {
-          style: (feature: any) => ({ color: '#ffffff', weight: 1.5, fillColor: fillForProvince(String(feature?.properties?.PROVINCIA || '')), fillOpacity: 1 }),
+          style: (feature: any) => ({ color: '#f8fafc', weight: 1.8, fillColor: fillForProvince(String(feature?.properties?.PROVINCIA || '')), fillOpacity: 0.94, opacity: 1 }),
           onEachFeature: (feature: any, provinceLayer: any) => {
             const props = feature?.properties || {};
             const info: ProvinceInfo = { name: String(props.PROVINCIA || 'Província'), capital: props.SEDE || undefined, municipalities: Array.isArray(props.MUNICIPIOS) ? props.MUNICIPIOS : [], communes: Number(props.N_COMUNAS || 0) };
             provinceLayer.bindTooltip(text(info.name), { permanent: false, sticky: true, direction: 'top', opacity: 0.96, className: 'osie-map-hover-label' });
             provinceLayer.on({
-              mouseover: () => { provinceLayer.setStyle({ weight: 2.5, fillOpacity: 0.86 }); provinceLayer.bringToFront?.(); },
-              mouseout: () => { if (normalize(selected?.name) !== normalize(info.name)) provinceLayer.setStyle({ fillColor: fillForProvince(info.name), weight: 1.5, fillOpacity: 1 }); },
+              mouseover: () => { provinceLayer.setStyle({ weight: 3, color: '#0f4c81', fillOpacity: 0.9 }); provinceLayer.bringToFront?.(); },
+              mouseout: () => { const isSelected = normalize(selectedProvinceRef.current) === normalize(info.name); provinceLayer.setStyle({ fillColor: isSelected ? '#60a5fa' : fillForProvince(info.name), color: '#f8fafc', weight: isSelected ? 2.5 : 1.8, fillOpacity: 0.94 }); },
               click: () => {
                 setSelected(info);
                 layer.eachLayer((item: any) => item.setStyle?.({ fillColor: fillForProvince(String(item.feature?.properties?.PROVINCIA || '')), weight: 1.5, fillOpacity: 1 }));
-                provinceLayer.setStyle({ fillColor: '#60a5fa' });
+                provinceLayer.setStyle({ fillColor: '#60a5fa', color: '#0f4c81', weight: 2.5, fillOpacity: 0.96 });
                 localMap.fitBounds(provinceLayer.getBounds(), { padding: [20, 20], maxZoom: 7 });
               },
             });
@@ -116,7 +123,7 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
 
         located.forEach((org) => {
           const location = [org.municipality, org.province].filter(Boolean).join(', ');
-          L.circleMarker([Number(org.latitude), Number(org.longitude)], { radius: compact ? 5 : 7, weight: 2, color: '#065f46', fillColor: '#10b981', fillOpacity: 1 })
+          L.circleMarker([Number(org.latitude), Number(org.longitude)], { radius: compact ? 5 : 7, weight: 3, color: '#ffffff', fillColor: '#059669', fillOpacity: 1 })
             .bindPopup(`<strong>${text(org.name)}</strong><br/>${text(org.facility_code)}<br/>${text(location || 'Localização não disponível')}`)
             .addTo(localMap);
         });
@@ -146,12 +153,12 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
     map.fitBounds(layer.getBounds(), { padding: [10, 10] });
   };
 
-  if (compact) return <section className="glass-panel overflow-hidden rounded-2xl"><div ref={containerRef} className="h-[280px] w-full bg-slate-50" />{mapError ? <p className="p-3 text-xs text-amber-700">Mapa administrativo temporariamente indisponível.</p> : null}</section>;
+  if (compact) return <section className="glass-panel overflow-hidden rounded-2xl"><div ref={containerRef} className="h-[280px] w-full bg-[#d7eaf6]" />{mapError ? <p className="p-3 text-xs text-amber-700">Mapa administrativo temporariamente indisponível.</p> : null}</section>;
 
   return <section className="glass-panel overflow-hidden rounded-2xl">
     <div className="border-b border-slate-200 p-5"><div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#004a99]">Centro de situação territorial</p><h2 className="mt-1 text-lg font-bold text-slate-900">Angola · Rede e indicadores OSIE</h2><p className="mt-1 text-xs text-slate-500">Explore a rede, a distribuição epidemiológica agregada e a qualidade da georreferenciação.</p></div><div className="flex flex-wrap gap-2">{([['network','Rede hospitalar'],['epidemiology','Epidemiologia'],['quality','Qualidade dos dados']] as [MapMode,string][]).map(([value,label]) => <button key={value} onClick={()=>setMode(value)} className={`rounded-full px-3 py-2 text-xs font-bold transition ${mode===value?'bg-[#004a99] text-white':'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{label}</button>)}</div></div>{mode==='epidemiology' ? <div className="mt-4 flex flex-wrap items-center gap-3"><label className="text-xs font-semibold text-slate-500">Condição</label><select value={conditionFilter} onChange={(event)=>setConditionFilter(event.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"><option value="all">Todas as condições</option>{conditionOptions.map((condition)=><option key={condition} value={condition}>{condition}</option>)}</select><span className="text-xs text-slate-400">Cor mais intensa = maior número de registos agregados.</span></div> : null}{mode==='quality' ? <p className="mt-3 text-xs text-slate-500">Verde: todas as instituições da província georreferenciadas · amarelo: cobertura parcial · vermelho: cobertura baixa · cinzento: sem instituição registada.</p> : null}<div className="mt-4 flex flex-wrap gap-2 text-xs">{mode==='network' ? <><span className="rounded-full bg-blue-50 px-3 py-1.5 font-semibold text-blue-700">{organizations.length} instituições registadas</span><span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-600">{provincesWithInstitutions} províncias com cobertura OSIE</span></> : null}{mode==='epidemiology' ? <>{territorialRecords > 0 ? <><span className="rounded-full bg-blue-50 px-3 py-1.5 font-semibold text-blue-700">{territorialRecords} registos agregados</span><span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-600">{provincesWithClinicalData} províncias com dados</span></> : <span className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">Sem registos territorializados para o filtro atual. O mapa não inventa distribuição clínica.</span>}</> : null}{mode==='quality' ? <><span className="rounded-full bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700">{located.length} georreferenciadas</span><span className={`rounded-full px-3 py-1.5 ${institutionsMissingCoordinates ? 'bg-amber-50 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>{institutionsMissingCoordinates} sem coordenadas</span></> : null}</div></div>
     <div className="grid lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,.7fr)]">
-      <div className="relative min-h-[460px] bg-slate-50"><div ref={containerRef} className="absolute inset-0" />{mapError ? <div className="absolute inset-x-4 bottom-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Mapa administrativo temporariamente indisponível.</div> : null}</div>
+      <div className="relative min-h-[520px] bg-[#d7eaf6]"><div ref={containerRef} className="absolute inset-0" />{mapError ? <div className="absolute inset-x-4 bottom-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Mapa administrativo temporariamente indisponível.</div> : null}</div>
       <aside className="border-t border-slate-200 bg-white p-5 lg:border-l lg:border-t-0">
         {selected ? <div className="space-y-5">
           <div><button onClick={resetMap} className="mb-3 text-xs font-semibold text-[#004a99] hover:underline">← Ver Angola</button><p className="text-xs font-bold uppercase tracking-wide text-slate-400">Província selecionada</p><h3 className="mt-1 text-2xl font-bold text-slate-900">{selected.name}</h3>{selected.capital ? <p className="text-sm text-slate-500">Sede: {selected.capital}</p> : null}</div>
