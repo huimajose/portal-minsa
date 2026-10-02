@@ -8,8 +8,9 @@ export default function NetworkDashboard() {
   const [data, setData] = useState<StatisticsOverview | null>(null);
   const [query, setQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  useEffect(() => { fetchStatisticsOverview().then(setData).catch((e) => setError(e instanceof Error ? e.message : 'Falha ao carregar a rede.')); }, []);
+  useEffect(() => { fetchStatisticsOverview().then(setData).catch((e) => setError(e instanceof Error ? e.message : 'Falha ao carregar a rede.')).finally(() => setLoading(false)); }, []);
   const orgs = data?.network.organizations || [];
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -20,6 +21,8 @@ export default function NetworkDashboard() {
   const selectedTerritorial = selectedOrg ? (data?.territorial_epidemiology || []).filter((row)=>String(row.province||'').toLowerCase()===String(selectedOrg.province||'').toLowerCase() && (!selectedOrg.municipality || String(row.municipality||'').toLowerCase()===String(selectedOrg.municipality).toLowerCase())) : [];
   const selectedRecords = selectedTerritorial.reduce((sum,row)=>sum+Number(row.count||0),0);
   const selectedConditions = Array.from(selectedTerritorial.reduce((map,row)=>map.set(row.condition,(map.get(row.condition)||0)+Number(row.count||0)),new Map<string,number>()).entries()).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  if (loading) return <div className="glass-card rounded-2xl p-6 text-sm font-medium text-slate-500">A recuperar informação. Aguarde…</div>;
 
   return <div className="space-y-6">
     <div className="grid gap-4 sm:grid-cols-3">
