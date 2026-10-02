@@ -13,8 +13,10 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const provinceLayerRef = useRef<any>(null);
+  const markerLayerRef = useRef<any>(null);
   const selectedProvinceRef = useRef<string | null>(null);
   const [selected, setSelected] = useState<ProvinceInfo | null>(null);
+  const [selectedMunicipality, setSelectedMunicipality] = useState<string | null>(null);
   const [mapError, setMapError] = useState(false);
   const [mode, setMode] = useState<MapMode>('network');
   const [conditionFilter, setConditionFilter] = useState<string>('all');
@@ -64,9 +66,17 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
     return metric.institutions ? '#bfdbfe' : '#e2e8f0';
   };
 
-  const selectedOrganizations = useMemo(() => selected ? organizations.filter((org) => normalize(org.province) === normalize(selected.name)) : [], [organizations, selected]);
-  const selectedTerritorial = useMemo(() => selected ? territorial.filter((row) => normalize(row.province) === normalize(selected.name)) : [], [territorial, selected]);
-  const municipalityCount = selected ? selected.municipalities.length : 0;
+  const selectedOrganizations = useMemo(() => selected ? organizations.filter((org) => normalize(org.province) === normalize(selected.name) && (!selectedMunicipality || normalize(org.municipality) === normalize(selectedMunicipality))) : [], [organizations, selected, selectedMunicipality]);
+  const selectedTerritorial = useMemo(() => selected ? territorial.filter((row) => normalize(row.province) === normalize(selected.name) && (!selectedMunicipality || normalize(row.municipality) === normalize(selectedMunicipality))) : [], [territorial, selected, selectedMunicipality]);
+  const availableMunicipalities = useMemo(() => {
+    if (!selected) return [];
+    const names = new Set<string>();
+    selected.municipalities.forEach((name) => name && names.add(name));
+    organizations.filter((org) => normalize(org.province) === normalize(selected.name)).forEach((org) => org.municipality && names.add(org.municipality));
+    territorial.filter((row) => normalize(row.province) === normalize(selected.name)).forEach((row) => row.municipality && names.add(row.municipality));
+    return Array.from(names).sort((a, b) => a.localeCompare(b, 'pt'));
+  }, [selected, organizations, territorial]);
+  const municipalityCount = availableMunicipalities.length;
   const clinicalRecords = selectedTerritorial.reduce((sum, row) => sum + Number(row.count || 0), 0);
   const conditions = useMemo(() => {
     const totals = new Map<string, number>();
@@ -106,6 +116,7 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
               mouseout: () => { const isSelected = normalize(selectedProvinceRef.current) === normalize(info.name); provinceLayer.setStyle({ fillColor: isSelected ? '#60a5fa' : fillForProvince(info.name), color: '#f8fafc', weight: isSelected ? 2.5 : 1.8, fillOpacity: 0.94 }); },
               click: () => {
                 setSelected(info);
+                setSelectedMunicipality(null);
                 layer.eachLayer((item: any) => item.setStyle?.({ fillColor: fillForProvince(String(item.feature?.properties?.PROVINCIA || '')), weight: 1.5, fillOpacity: 1 }));
                 provinceLayer.setStyle({ fillColor: '#60a5fa', color: '#0f4c81', weight: 2.5, fillOpacity: 0.96 });
                 localMap.fitBounds(provinceLayer.getBounds(), { padding: [20, 20], maxZoom: 7 });
@@ -123,17 +134,32 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
 
         located.forEach((org) => {
           const location = [org.municipality, org.province].filter(Boolean).join(', ');
-          L.circleMarker([Number(org.latitude), Number(org.longitude)], { radius: compact ? 5 : 7, weight: 3, color: '#ffffff', fillColor: '#059669', fillOpacity: 1 })
+          const marker = L.circleMarker([Number(org.latitude), Number(org.longitude)], { radius: compact ? 5 : 7, weight: 3, color: '#ffffff', fillColor: '#059669', fillOpacity: 1 })
             .bindPopup(`<strong>${text(org.name)}</strong><br/>${text(org.facility_code)}<br/>${text(location || 'Localização não disponível')}`)
             .addTo(localMap);
+          (marker as any).__osieOrg = org;
         });
       } catch {
         setMapError(true);
       }
     });
 
-    return () => { cancelled = true; if (localMap) localMap.remove(); mapRef.current = null; provinceLayerRef.current = null; };
+    return () => { cancelled = true; if (localMap) localMap.remove(); mapRef.current = null; provinceLayerRef.current = null; markerLayerRef.current = null; };
   }, [compact, located]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.eachLayer((item: any) => {
+      const org = item.__osieOrg as Organization | undefined;
+      if (!org || !item.setStyle) return;
+      const provinceSelected = Boolean(selected && normalize(org.province) === normalize(selected.name));
+      const municipalitySelected = Boolean(selectedMunicipality && normalize(org.municipality) === normalize(selectedMunicipality));
+      const active = municipalitySelected || (provinceSelected && !selectedMunicipality);
+      item.setStyle({ radius: active ? (compact ? 7 : 10) : (compact ? 5 : 7), weight: active ? 4 : 3, color: active ? '#7c3aed' : '#ffffff', fillColor: active ? '#f59e0b' : '#059669', fillOpacity: 1 });
+      if (active) item.bringToFront?.();
+    });
+  }, [selected, selectedMunicipality, compact, located]);
 
   useEffect(() => {
     const layer = provinceLayerRef.current;
@@ -149,6 +175,7 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
     const layer = provinceLayerRef.current;
     if (!map || !layer) return;
     setSelected(null);
+    setSelectedMunicipality(null);
     layer.eachLayer((item: any) => item.setStyle?.({ fillColor: fillForProvince(String(item.feature?.properties?.PROVINCIA || '')), weight: 1.5, fillOpacity: 1 }));
     map.fitBounds(layer.getBounds(), { padding: [10, 10] });
   };
@@ -161,10 +188,10 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
       <div className="relative min-h-[520px] bg-[#d7eaf6]"><div ref={containerRef} className="absolute inset-0" />{mapError ? <div className="absolute inset-x-4 bottom-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Mapa administrativo temporariamente indisponível.</div> : null}</div>
       <aside className="border-t border-slate-200 bg-white p-5 lg:border-l lg:border-t-0">
         {selected ? <div className="space-y-5">
-          <div><button onClick={resetMap} className="mb-3 text-xs font-semibold text-[#004a99] hover:underline">← Ver Angola</button><p className="text-xs font-bold uppercase tracking-wide text-slate-400">Província selecionada</p><h3 className="mt-1 text-2xl font-bold text-slate-900">{selected.name}</h3>{selected.capital ? <p className="text-sm text-slate-500">Sede: {selected.capital}</p> : null}</div>
+          <div><button onClick={resetMap} className="mb-3 text-xs font-semibold text-[#004a99] hover:underline">← Ver Angola</button><p className="text-xs font-bold uppercase tracking-wide text-slate-400">Província selecionada</p><h3 className="mt-1 text-2xl font-bold text-slate-900">{selected.name}</h3>{selectedMunicipality ? <div className="mt-2 flex items-center gap-2"><span className="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-bold text-violet-700">Município: {selectedMunicipality}</span><button onClick={()=>setSelectedMunicipality(null)} className="text-xs font-semibold text-[#004a99] hover:underline">Ver toda a província</button></div> : null}{selected.capital ? <p className="text-sm text-slate-500">Sede: {selected.capital}</p> : null}</div>
           <div className="grid grid-cols-2 gap-3"><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-slate-500">Municípios</p><strong className="text-xl">{municipalityCount}</strong></div><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-slate-500">Instituições OSIE</p><strong className="text-xl">{selectedOrganizations.length}</strong></div><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-slate-500">Registos clínicos</p><strong className="text-xl">{clinicalRecords || '—'}</strong></div><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-slate-500">Comunas</p><strong className="text-xl">{selected.communes || '—'}</strong></div></div>
           <div><h4 className="text-sm font-bold text-slate-800">Condições mais registadas</h4><div className="mt-2 space-y-2">{conditions.length ? conditions.map((row) => <div key={row.label} className="flex justify-between border-b border-slate-100 py-1 text-sm"><span>{row.label}</span><strong>{row.count}</strong></div>) : <p className="text-xs text-slate-500">Sem dados clínicos territorializados para esta província.</p>}</div></div>
-          <div><h4 className="text-sm font-bold text-slate-800">Instituições na província</h4><div className="mt-2 space-y-2">{selectedOrganizations.length ? selectedOrganizations.slice(0,6).map((org)=><div key={org.id} className="rounded-xl border border-slate-100 p-2"><div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold text-slate-700">{org.name}</span><span className="text-[10px] uppercase text-slate-400">{org.status || '—'}</span></div><p className="mt-1 text-[11px] text-slate-400">{org.facility_code || 'Sem código'} · {org.municipality || 'Município não informado'}</p></div>) : <p className="text-xs text-slate-500">Sem instituições OSIE registadas nesta província.</p>}</div></div><div><h4 className="text-sm font-bold text-slate-800">Municípios</h4><div className="mt-2 flex max-h-32 flex-wrap gap-1.5 overflow-auto">{selected.municipalities.map((name) => <span key={name} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{name}</span>)}</div></div>
+          <div><h4 className="text-sm font-bold text-slate-800">Instituições na província</h4><div className="mt-2 space-y-2">{selectedOrganizations.length ? selectedOrganizations.slice(0,6).map((org)=><div key={org.id} className="rounded-xl border border-slate-100 p-2"><div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold text-slate-700">{org.name}</span><span className="text-[10px] uppercase text-slate-400">{org.status || '—'}</span></div><p className="mt-1 text-[11px] text-slate-400">{org.facility_code || 'Sem código'} · {org.municipality || 'Município não informado'}</p></div>) : <p className="text-xs text-slate-500">Sem instituições OSIE registadas nesta província.</p>}</div></div><div><h4 className="text-sm font-bold text-slate-800">Municípios</h4><p className="mt-1 text-[11px] text-slate-400">Selecione um município para filtrar instituições e epidemiologia disponíveis.</p><div className="mt-2 flex max-h-36 flex-wrap gap-1.5 overflow-auto">{availableMunicipalities.map((name) => <button key={name} onClick={()=>setSelectedMunicipality(normalize(selectedMunicipality)===normalize(name)?null:name)} className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${normalize(selectedMunicipality)===normalize(name)?'bg-violet-600 text-white':'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{name}</button>)}</div></div>
         </div> : <div className="flex h-full min-h-72 flex-col items-center justify-center text-center"><p className="text-sm font-semibold text-slate-700">Selecione uma província</p><p className="mt-2 max-w-xs text-xs leading-5 text-slate-500">O painel mostrará instituições OSIE, municípios e dados epidemiológicos reais disponíveis para o território selecionado.</p></div>}
       </aside>
     </div>
