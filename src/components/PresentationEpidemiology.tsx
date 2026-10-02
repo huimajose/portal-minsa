@@ -5,9 +5,10 @@ import { fetchStatisticsOverview } from '../lib/statistics';
 export default function PresentationEpidemiology() {
   const [data,setData]=useState<StatisticsOverview|null>(null);
   const [error,setError]=useState<string|null>(null);
+  const [loading,setLoading]=useState(true);
   const [province,setProvince]=useState('ALL');
 
-  useEffect(()=>{void fetchStatisticsOverview().then(setData).catch(e=>setError(e instanceof Error?e.message:'Falha ao consultar epidemiologia.'));},[]);
+  useEffect(()=>{void fetchStatisticsOverview().then(setData).catch(e=>setError(e instanceof Error?e.message:'Falha ao consultar epidemiologia.')).finally(()=>setLoading(false));},[]);
 
   const territorial=data?.territorial_epidemiology||[];
   const provinces=useMemo(()=>Array.from(new Set(territorial.map(x=>x.province).filter((x):x is string=>Boolean(x)))).sort(),[territorial]);
@@ -19,6 +20,8 @@ export default function PresentationEpidemiology() {
   },[territorial]);
   const age=data?.age_distribution||[];
   const ageTotal=age.reduce((sum,row)=>sum+Number(row.count||0),0);
+
+  if (loading) return <div className="glass-card rounded-2xl p-6 text-sm font-medium text-slate-500">A recuperar informação. Aguarde…</div>;
 
   return <div className="space-y-5">
     <div className="grid gap-4 lg:grid-cols-3">

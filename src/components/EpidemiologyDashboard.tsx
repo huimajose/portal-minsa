@@ -11,7 +11,8 @@ export default function EpidemiologyDashboard() {
   const [condition,setCondition]=useState('all');
   const [mode,setMode]=useState<Mode>('total');
   const [error,setError]=useState<string|null>(null);
-  useEffect(()=>{fetchStatisticsOverview().then(setData).catch((e)=>setError(e instanceof Error?e.message:'Falha ao carregar epidemiologia.'));},[]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{fetchStatisticsOverview().then(setData).catch((e)=>setError(e instanceof Error?e.message:'Falha ao carregar epidemiologia.')).finally(()=>setLoading(false));},[]);
 
   const years=useMemo(()=>data?.encounters_by_year.map((x)=>String(x.year)).reverse()||[],[data]);
   const encounters=year==='all' ? data?.clinical_activity.encounters : data?.encounters_by_year.find((x)=>String(x.year)===year)?.count;
@@ -21,6 +22,8 @@ export default function EpidemiologyDashboard() {
     const selected=condition==='all'?rows:rows.filter((x)=>x.label===condition);
     return selected.map((x)=>({name:x.label,value:mode==='percentage'&&totalConditions?Number(((x.count/totalConditions)*100).toFixed(1)):x.count}));
   },[data,condition,mode,totalConditions]);
+
+  if (loading) return <div className="glass-card rounded-2xl p-6 text-sm font-medium text-slate-500">A recuperar informação. Aguarde…</div>;
 
   return <div className="space-y-5">
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:w-1/2">

@@ -5,7 +5,10 @@ import type { StatisticsOverview } from '../server/statistics-service';
 export default function ReportsDashboard() {
   const [data,setData]=useState<StatisticsOverview|null>(null);
   const [error,setError]=useState<string|null>(null);
-  useEffect(()=>{fetchStatisticsOverview().then(setData).catch((e)=>setError(e instanceof Error?e.message:'Falha ao carregar dados do relatório.'));},[]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{fetchStatisticsOverview().then(setData).catch((e)=>setError(e instanceof Error?e.message:'Falha ao carregar dados do relatório.')).finally(()=>setLoading(false));},[]);
+
+  if (loading) return <div className="glass-card rounded-2xl p-6 text-sm font-medium text-slate-500">A recuperar informação. Aguarde…</div>;
 
   return <div className="space-y-6">
     {error && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
