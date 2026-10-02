@@ -3,6 +3,7 @@ import { Database, KeyRound, Search, Users } from 'lucide-react';
 import PortalShell from '../src/components/PortalShell';
 import { usePortal } from '../src/context/PortalContext';
 import type { AdministrativeUserDirectoryEntry } from '../src/server/auth-service';
+import { localizeValue } from '../src/lib/localize';
 
 type SystemStatus = { portal:string; statistics_service:string; auth_service:string; database_manager:string };
 
@@ -31,7 +32,7 @@ export default function UsersPage() {
   },[users,query]);
 
   if (!userSession) return null;
-  const badge=(value?:string)=>value==='ok'?<span className="text-emerald-700">Operacional</span>:value?<span className="text-amber-700">{value}</span>:<span className="text-slate-400">A verificar</span>;
+  const badge=(value?:string)=>value==='ok'?<span className="text-emerald-700">Operacional</span>:value?<span className="text-amber-700">{localizeValue(value)}</span>:<span className="text-slate-400">A verificar</span>;
 
   return <PortalShell currentView="users">
     <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#004a99]">OSIE · Governação</p><h1 className="mt-1 text-2xl font-bold">Administração</h1><p className="mt-1 text-sm text-slate-500">Gestão e consulta dos utilizadores autorizados.</p></div>
@@ -47,7 +48,7 @@ export default function UsersPage() {
         <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"><Search className="h-4 w-4 text-slate-400"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Pesquisar utilizador ou instituição" className="w-64 max-w-full outline-none"/></label>
       </div>
       {error?<p className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{error}</p>:null}
-      <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-xs uppercase text-slate-400"><tr><th className="px-3 py-3">Utilizador</th><th className="px-3 py-3">Função</th><th className="px-3 py-3">Instituição</th><th className="px-3 py-3">Estado</th><th className="px-3 py-3">Confirmação</th></tr></thead><tbody>{filtered.map(user=><tr key={user.identifier||user.username||Math.random()} className="border-b border-slate-100"><td className="px-3 py-3"><p className="font-semibold">{user.display_name||user.username||'Sem nome'}</p><p className="text-xs text-slate-400">{user.username}</p></td><td className="px-3 py-3">{user.role||user.user_type||'—'}</td><td className="px-3 py-3"><p>{user.organization_name||'—'}</p><p className="text-xs text-slate-400">{user.facility_code||user.organization_id||''}</p></td><td className="px-3 py-3">{user.status||'—'}</td><td className="px-3 py-3">{user.confirmed?'Confirmado':'Pendente'}</td></tr>)}</tbody></table></div>
+      <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-xs uppercase text-slate-400"><tr><th className="px-3 py-3">Utilizador</th><th className="px-3 py-3">Função</th><th className="px-3 py-3">Instituição</th><th className="px-3 py-3">Estado</th><th className="px-3 py-3">Confirmação</th></tr></thead><tbody>{filtered.map(user=><tr key={user.identifier||user.username} className="border-b border-slate-100"><td className="px-3 py-3"><p className="font-semibold">{user.display_name||user.username||'Sem nome'}</p><p className="text-xs text-slate-400">{user.username}</p></td><td className="px-3 py-3">{localizeValue(user.role||user.user_type)}</td><td className="px-3 py-3"><p>{user.organization_name||'—'}</p><p className="text-xs text-slate-400">{user.facility_code||user.organization_id||''}</p></td><td className="px-3 py-3">{localizeValue(user.status)}</td><td className="px-3 py-3">{user.confirmed?'Confirmado':'Pendente'}</td></tr>)}</tbody></table></div>
       {!loading&&!filtered.length&&!error?<p className="py-8 text-center text-sm text-slate-400">Nenhum utilizador corresponde ao filtro.</p>:null}
     </section>
   </PortalShell>;
