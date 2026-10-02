@@ -51,7 +51,7 @@ export default function EpidemiologyDashboard() {
       <div className="grid lg:grid-cols-[1.12fr_0.88fr]">
         <div className="border-b border-slate-200 p-4 lg:border-b-0 lg:border-r">
           <div className="mb-3 flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-[#004a99]">Distribuição geográfica</p><h2 className="font-bold">Rede OSIE em Angola</h2></div><Map className="h-5 w-5 text-slate-400"/></div>
-          <InstitutionHeatmap organizations={orgs}/>
+          <InstitutionHeatmap organizations={orgs} compact/>
         </div>
         <div className="space-y-4 p-4">
           <div className="grid grid-cols-3 gap-2">

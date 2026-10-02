@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import React, { useState } from 'react';
-import { Home, Building2, Activity, FileText, Settings, Menu, LogOut, ShieldCheck, Layers } from 'lucide-react';
+import { Home, Building2, Activity, FileText, Settings, Menu, LogOut, ShieldCheck } from 'lucide-react';
 import { UserSession } from '../types';
 import { hasPermission } from './RoleGuard';
 
@@ -33,10 +33,10 @@ export default function Navigation({ currentView, onSetView, userSession, onLogo
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md no-print">
       <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-4 py-3 lg:px-6">
         <button onClick={() => onSetView('dashboard')} className="flex min-w-0 items-center gap-3 text-left">
-          <span className="rounded-xl bg-[#004a99] p-2 text-white"><Layers className="h-5 w-5" /></span>
+          <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-xl bg-[#004a99] text-sm font-black text-white"><img src="/logo.png" alt="" className="h-full w-full object-contain" onError={(e)=>{e.currentTarget.style.display='none';e.currentTarget.parentElement?.append('M');}} /></span>
           <span className="min-w-0">
             <strong className="block truncate text-base text-[#004a99]">Portal MINSA</strong>
-            <span className="hidden text-[11px] text-slate-500 sm:block">Centro Nacional de Situação OSIE</span>
+            <span className="hidden text-[11px] text-slate-500 sm:block">Centro Nacional de Situação</span>
           </span>
         </button>
 
