@@ -23,7 +23,7 @@ export default function NetworkDashboard() {
       <div className="glass-card rounded-2xl p-5"><Radio className="h-5 w-5 text-[#004a99]"/><p className="mt-3 text-xs font-bold uppercase text-slate-500">Nodes ativos</p><strong className="mt-1 block text-3xl">{data?.network.active_nodes ?? '—'}</strong></div>
     </div>
     {error && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
-    <InstitutionHeatmap organizations={orgs} />
+    <InstitutionHeatmap organizations={orgs} territorial={data?.territorial_epidemiology || []} />
     <section className="glass-panel rounded-2xl p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div><h2 className="font-bold text-slate-900">Diretório institucional</h2><p className="text-xs text-slate-500">Instituições reais registadas na rede OSIE.</p></div>
