@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
 import { fetchStatisticsOverview } from '../lib/statistics';
 import type { StatisticsOverview } from '../server/statistics-service';
 
@@ -20,6 +19,6 @@ export default function ReportsDashboard() {
         <div className="rounded-xl bg-slate-50 p-4"><span className="text-xs text-slate-500">Instituições no diretório</span><strong className="mt-1 block text-xl">{data?.network.organizations.length ?? '—'}</strong></div>
       </div>
     </section>
-    <div className="flex items-center gap-2 text-xs text-slate-500"><ShieldCheck className="h-4 w-4 text-emerald-600"/>Dados agregados. Nenhum registo clínico individual é apresentado.</div>
+    
   </div>;
 }
