@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Navigation from './Navigation';
 import { usePortal } from '../context/PortalContext';
@@ -7,6 +8,14 @@ interface PortalShellProps {
   currentView: string;
   children: React.ReactNode;
 }
+
+const VIEW_TITLES: Record<string, string> = {
+  dashboard: 'Visão Nacional',
+  hospitals: 'Rede Hospitalar',
+  epidemiology: 'Epidemiologia',
+  reports: 'Relatórios',
+  users: 'Administração',
+};
 
 const normalizeViewToPath = (view: string) => {
   if (view === 'dashboard') {
@@ -57,8 +66,14 @@ export default function PortalShell({ currentView, children }: PortalShellProps)
     void router.push('/dashboard');
   };
 
+  const pageTitle = VIEW_TITLES[currentView] || 'Portal MINSA';
+
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
+    <>
+      <Head>
+        <title>{pageTitle} | OSIE</title>
+      </Head>
+      <div className="min-h-screen bg-slate-100 text-slate-900">
       <Navigation
         currentView={currentView}
         onSetView={handleRouteChange}
@@ -75,5 +90,6 @@ export default function PortalShell({ currentView, children }: PortalShellProps)
         </section>
       </div>
     </div>
+    </>
   );
 }
