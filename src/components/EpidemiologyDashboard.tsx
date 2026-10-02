@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Activity, CalendarDays, Database, HeartPulse, Map, SlidersHorizontal } from 'lucide-react';
+import { Activity, CalendarDays, Database, HeartPulse, SlidersHorizontal } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { fetchStatisticsOverview } from '../lib/statistics';
 import type { StatisticsOverview } from '../server/statistics-service';
-import InstitutionHeatmap from './InstitutionHeatmap';
 
 type Mode = 'total' | 'percentage';
 
@@ -33,7 +32,6 @@ export default function EpidemiologyDashboard() {
   },[data,condition,mode,totalConditions]);
   const values=conditionRows.map((x)=>x.value);
   const summary=values.length?{min:Math.min(...values),max:Math.max(...values),mean:values.reduce((a,b)=>a+b,0)/values.length}:null;
-  const orgs=data?.network.organizations||[];
 
   return <div className="space-y-5">
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -48,18 +46,7 @@ export default function EpidemiologyDashboard() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1.12fr_0.88fr]">
-        <div className="border-b border-slate-200 p-4 lg:border-b-0 lg:border-r">
-          <div className="mb-3 flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-[#004a99]">Distribuição geográfica</p><h2 className="font-bold">Rede OSIE em Angola</h2></div><Map className="h-5 w-5 text-slate-400"/></div>
-          <InstitutionHeatmap organizations={orgs} compact/>
-        </div>
-        <div className="space-y-4 p-4">
-          <div className="grid grid-cols-3 gap-2">
-            {[['Mínimo',summary?.min],['Máximo',summary?.max],['Média',summary?.mean]].map(([label,value])=><div key={String(label)} className="rounded-xl bg-slate-50 p-3"><p className="text-[10px] font-bold uppercase text-slate-400">{label}</p><strong className="mt-1 block text-lg">{typeof value==='number'?`${value.toFixed(mode==='percentage'?1:0)}${mode==='percentage'?'%':''}`:'—'}</strong></div>)}
-          </div>
-          <section className="rounded-xl border border-slate-200 p-4"><div className="flex items-center gap-2"><HeartPulse className="h-4 w-4 text-[#004a99]"/><h3 className="font-bold">Condições registadas</h3></div>
-            {conditionRows.length?<div className="mt-3 h-64"><ResponsiveContainer width="100%" height="100%"><BarChart data={conditionRows} layout="vertical" margin={{left:8,right:12}}><CartesianGrid strokeDasharray="3 3"/><XAxis type="number"/><YAxis type="category" dataKey="name" width={110} tick={{fontSize:11}}/><Tooltip formatter={(v)=>[`${v}${mode==='percentage'?'%':''}`,mode==='percentage'?'Percentagem':'Total']}/><Bar dataKey="value" fill="#66cbd3" radius={[0,5,5,0]}/></BarChart></ResponsiveContainer></div>:<EmptyAnalytic title="Sem condições agregadas" text="O painel será preenchido quando existirem condições clínicas agregadas no OSIE."/>}
-          </section>
+
           <section className="rounded-xl border border-slate-200 p-4"><h3 className="font-bold">Distribuição territorial</h3><p className="mt-1 text-xs text-slate-500">Treemap por província/município</p><div className="mt-3"><EmptyAnalytic title="Agregado territorial ainda indisponível" text="A localização das instituições existe, mas as condições clínicas ainda não possuem uma dimensão territorial confiável no contrato analítico."/></div></section>
         </div>
       </div>
