@@ -37,25 +37,10 @@ export default function NationalStatisticsDashboard() {
     <section className="overflow-hidden rounded-3xl bg-slate-950 p-6 text-white shadow-xl">
       <div className="grid gap-6 xl:grid-cols-[1.25fr_.75fr] xl:items-end"><div><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-sky-300"><ShieldCheck className="h-4 w-4"/>Centro Nacional de Situação</div><h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight">Estado consolidado da infraestrutura OSIE</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Cobertura institucional, atividade clínica agregada e situação territorial disponível para gestão nacional.</p></div><div className="grid grid-cols-2 gap-3"><div className="rounded-2xl bg-white/10 p-4"><MapPin className="h-4 w-4 text-sky-300"/><strong className="mt-2 block text-2xl">{loading?'…':provincesCovered}</strong><span className="text-xs text-slate-300">províncias com instituições</span></div><div className="rounded-2xl bg-white/10 p-4"><Building2 className="h-4 w-4 text-sky-300"/><strong className="mt-2 block text-2xl">{loading?'…':municipalitiesCovered}</strong><span className="text-xs text-slate-300">municípios representados</span></div></div></div>
     </section>
-    <div className="glass-panel rounded-2xl p-6 shadow-sm">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#004a99]">OSIE · Visão Nacional</p>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900">Indicadores nacionais de interoperabilidade</h1>
-          <p className="mt-1 text-sm text-slate-500">Panorama consolidado da rede nacional de saúde.</p>
-        </div>
-        <span className={`rounded-full px-3 py-1 text-xs font-bold ${error ? 'bg-red-50 text-red-700' : loading ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-          {error ? 'Serviço indisponível' : loading ? 'A sincronizar…' : 'Atualizado'}
-        </span>
-      </div>
-      {error && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-    </div>
-
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {cards.map(([label, value, Icon]) => <div key={label} className="glass-card rounded-2xl p-5">
         <div className="flex items-center justify-between"><span className="text-sm font-semibold text-slate-500">{label}</span><Icon className="h-5 w-5 text-[#004a99]" /></div>
         <div className="mt-4 font-mono text-3xl font-bold text-slate-900">{loading ? '…' : fmt(value)}</div>
-        {label === 'Nodes ativos' && value == null && !loading && <p className="mt-2 text-xs text-slate-500">Informação ainda indisponível.</p>}
       </div>)}
     </div>
 
@@ -66,28 +51,6 @@ export default function NationalStatisticsDashboard() {
       <div className="glass-card rounded-2xl p-5"><p className="text-xs font-bold uppercase text-slate-500">Cobertura geográfica</p><strong className="mt-2 block text-2xl text-slate-900">{georeferenced}/{data?.network.organizations.length || 0}</strong><p className="mt-1 text-xs text-slate-500">instituições com coordenadas disponíveis</p></div>
       <div className="glass-card rounded-2xl p-5"><p className="text-xs font-bold uppercase text-slate-500">Cobertura territorial</p><strong className="mt-2 block text-2xl text-slate-900">{provincesCovered} prov. · {municipalitiesCovered} mun.</strong><p className="mt-1 text-xs text-slate-500">presença institucional registada no OSIE</p></div>
       <div className="glass-card rounded-2xl p-5"><p className="text-xs font-bold uppercase text-slate-500">Base epidemiológica</p><strong className="mt-2 block text-2xl text-slate-900">{fmt(territorialRecords)}</strong><p className="mt-1 text-xs text-slate-500">registos clínicos territorializados disponíveis</p></div>
-    </section>
-
-    <section className="glass-panel rounded-2xl p-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="font-bold text-slate-800">Instituições OSIE registadas</h2>
-          <p className="mt-1 text-xs text-slate-500">Instituições participantes na rede nacional.</p>
-        </div>
-        <Building2 className="h-5 w-5 text-[#004a99]" />
-      </div>
-      <div className="mt-4 overflow-x-auto">
-        {data?.network.organizations?.length ? <table className="w-full text-left text-sm">
-          <thead><tr className="border-b border-slate-200 text-xs uppercase text-slate-500"><th className="py-2 pr-4">Instituição</th><th className="py-2 pr-4">Código</th><th className="py-2 pr-4">Tipo</th><th className="py-2 pr-4">Estado</th><th className="py-2">Localização</th></tr></thead>
-          <tbody>{data.network.organizations.map((org) => <tr key={org.id} className="border-b border-slate-100">
-            <td className="py-3 pr-4 font-semibold text-slate-800">{org.name}</td>
-            <td className="py-3 pr-4 font-mono text-xs text-slate-600">{org.facility_code || '—'}</td>
-            <td className="py-3 pr-4">{org.type || '—'}</td>
-            <td className="py-3 pr-4">{org.status || '—'}</td>
-            <td className="py-3">{[org.municipality, org.province].filter(Boolean).join(', ') || 'Não disponível no registo'}</td>
-          </tr>)}</tbody>
-        </table> : <p className="text-sm text-slate-500">{loading ? 'A carregar…' : 'Nenhuma instituição disponível no registo OSIE.'}</p>}
-      </div>
     </section>
 
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
