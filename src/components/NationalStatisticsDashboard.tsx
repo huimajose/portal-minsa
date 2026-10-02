@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Activity, Building2, ClipboardList, Database, HeartPulse, Users } from 'lucide-react';
 import { fetchStatisticsOverview } from '../lib/statistics';
 import type { StatisticsOverview } from '../server/statistics-service';
+import { localizeValue } from '../lib/localize';
 
 const fmt = (value: number | null | undefined) => value == null ? '—' : value.toLocaleString('pt-AO');
 
@@ -66,8 +67,8 @@ export default function NationalStatisticsDashboard() {
           <tbody>{data.network.organizations.map((org) => <tr key={org.id} className="border-b border-slate-100">
             <td className="py-3 pr-4 font-semibold text-slate-800">{org.name}</td>
             <td className="py-3 pr-4 font-mono text-xs text-slate-600">{org.facility_code || '—'}</td>
-            <td className="py-3 pr-4">{org.type || '—'}</td>
-            <td className="py-3 pr-4">{org.status || '—'}</td>
+            <td className="py-3 pr-4">{localizeValue(org.type)}</td>
+            <td className="py-3 pr-4">{localizeValue(org.status)}</td>
             <td className="py-3">{[org.municipality, org.province].filter(Boolean).join(', ') || 'Não disponível no registo'}</td>
           </tr>)}</tbody>
         </table> : <p className="text-sm text-slate-500">{loading ? 'A carregar…' : 'Nenhuma instituição disponível no registo OSIE.'}</p>}
