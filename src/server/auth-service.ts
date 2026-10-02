@@ -396,3 +396,32 @@ export async function resetPasswordWithAuthService(resetToken: string, newPasswo
     throw new Error(data.error || data.message || 'Falha ao definir a nova palavra-passe.');
   }
 }
+
+
+export interface AdministrativeUserDirectoryEntry {
+  identifier: string | null;
+  username: string | null;
+  display_name: string | null;
+  role: string | null;
+  user_type: string | null;
+  status: string | null;
+  organization_id: string | null;
+  organization_name: string | null;
+  organization_type: string | null;
+  facility_code: string | null;
+  confirmed: boolean;
+  password_change_required: boolean;
+}
+
+export async function fetchAdministrativeUsers(accessToken: string, limit = 200): Promise<AdministrativeUserDirectoryEntry[]> {
+  const response = await fetch(buildUrl(`/auth/admin/users?limit=${Math.min(Math.max(limit, 1), 500)}`), {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: 'no-store'
+  });
+  const data = await parseJson<{ users?: AdministrativeUserDirectoryEntry[]; error?: string; message?: string }>(response);
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'Falha ao consultar diretório administrativo.');
+  }
+  return Array.isArray(data.users) ? data.users : [];
+}
