@@ -19,6 +19,8 @@ export interface StatisticsOverview {
   clinical_activity: { encounters: number; observations: number; conditions: number };
   top_conditions: { label: string; count: number }[];
   encounters_by_year: { year: number; count: number }[];
+  age_distribution: { label: string; count: number }[];
+  territorial_epidemiology: { province: string | null; municipality: string | null; condition: string; count: number }[];
   privacy: { aggregation: string; contains_patient_records: boolean };
 }
 
