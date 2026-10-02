@@ -47,10 +47,10 @@ export default function InstitutionHeatmap({ organizations, territorial = [], co
           onEachFeature: (feature: any, provinceLayer: any) => {
             const props = feature?.properties || {};
             const info: ProvinceInfo = { name: String(props.PROVINCIA || 'Província'), capital: props.SEDE || undefined, municipalities: Array.isArray(props.MUNICIPIOS) ? props.MUNICIPIOS : [], communes: Number(props.N_COMUNAS || 0) };
-            provinceLayer.bindTooltip(text(info.name), { permanent: true, direction: 'center', className: 'osie-province-label' });
+            provinceLayer.bindTooltip(text(info.name), { permanent: false, sticky: true, direction: 'top', opacity: 0.96, className: 'osie-map-hover-label' });
             provinceLayer.on({
-              mouseover: () => provinceLayer.setStyle({ fillColor: '#93c5fd' }),
-              mouseout: () => { if (normalize(selected?.name) !== normalize(info.name)) provinceLayer.setStyle({ fillColor: '#dbeafe' }); },
+              mouseover: () => { provinceLayer.setStyle({ fillColor: '#93c5fd', weight: 2 }); provinceLayer.bringToFront?.(); },
+              mouseout: () => { if (normalize(selected?.name) !== normalize(info.name)) provinceLayer.setStyle({ fillColor: '#dbeafe', weight: 1.5 }); },
               click: () => {
                 setSelected(info);
                 layer.eachLayer((item: any) => item.setStyle?.({ fillColor: '#dbeafe' }));
