@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Activity, Building2, ClipboardList, Database, HeartPulse, MapPin, ShieldCheck, Users } from 'lucide-react';
 import InstitutionHeatmap from './InstitutionHeatmap';
 import { fetchStatisticsOverview } from '../lib/statistics';
 import type { StatisticsOverview } from '../server/statistics-service';
@@ -25,21 +24,21 @@ export default function NationalStatisticsDashboard() {
   const georeferenced = (data?.network.organizations || []).filter((org)=>Number.isFinite(Number(org.latitude))&&Number.isFinite(Number(org.longitude))).length;
   const territorialRecords = (data?.territorial_epidemiology || []).reduce((sum,row)=>sum+Number(row.count||0),0);
   const cards = [
-    ['Pacientes registados', data?.population.registered_patients, Users],
-    ['Instituições registadas', data?.network.registered_organizations, Building2],
-    ['Consultas / encontros', data?.clinical_activity.encounters, ClipboardList],
-    ['Observações clínicas', data?.clinical_activity.observations, Activity],
-    ['Condições clínicas', data?.clinical_activity.conditions, HeartPulse],
-    ['Nodes ativos', data?.network.active_nodes, Database],
+    ['Pacientes registados', data?.population.registered_patients],
+    ['Instituições registadas', data?.network.registered_organizations],
+    ['Consultas / encontros', data?.clinical_activity.encounters],
+    ['Observações clínicas', data?.clinical_activity.observations],
+    ['Condições clínicas', data?.clinical_activity.conditions],
+    ['Nodes ativos', data?.network.active_nodes],
   ] as const;
 
   return <div className="space-y-6">
     <section className="overflow-hidden rounded-3xl bg-slate-950 p-6 text-white shadow-xl">
-      <div className="grid gap-6 xl:grid-cols-[1.25fr_.75fr] xl:items-end"><div><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-sky-300"><ShieldCheck className="h-4 w-4"/>Centro Nacional de Situação</div><h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight">Estado consolidado da infraestrutura OSIE</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Cobertura institucional, atividade clínica agregada e situação territorial disponível para gestão nacional.</p></div><div className="grid grid-cols-2 gap-3"><div className="rounded-2xl bg-white/10 p-4"><MapPin className="h-4 w-4 text-sky-300"/><strong className="mt-2 block text-2xl">{loading?'…':provincesCovered}</strong><span className="text-xs text-slate-300">províncias com instituições</span></div><div className="rounded-2xl bg-white/10 p-4"><Building2 className="h-4 w-4 text-sky-300"/><strong className="mt-2 block text-2xl">{loading?'…':municipalitiesCovered}</strong><span className="text-xs text-slate-300">municípios representados</span></div></div></div>
+      <div className="grid gap-6 xl:grid-cols-[1.25fr_.75fr] xl:items-end"><div><div className="text-xs font-bold uppercase tracking-[.18em] text-sky-300">Centro Nacional de Situação</div><h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight">Estado consolidado da infraestrutura OSIE</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Cobertura institucional, atividade clínica agregada e situação territorial disponível para gestão nacional.</p></div><div className="grid grid-cols-2 gap-3"><div className="rounded-2xl bg-white/10 p-4"><strong className="mt-2 block text-2xl">{loading?'…':provincesCovered}</strong><span className="text-xs text-slate-300">províncias com instituições</span></div><div className="rounded-2xl bg-white/10 p-4"><strong className="mt-2 block text-2xl">{loading?'…':municipalitiesCovered}</strong><span className="text-xs text-slate-300">municípios representados</span></div></div></div>
     </section>
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {cards.map(([label, value, Icon]) => <div key={label} className="glass-card rounded-2xl p-5">
-        <div className="flex items-center justify-between"><span className="text-sm font-semibold text-slate-500">{label}</span><Icon className="h-5 w-5 text-[#004a99]" /></div>
+      {cards.map(([label, value]) => <div key={label} className="glass-card rounded-2xl p-5">
+        <div><span className="text-sm font-semibold text-slate-500">{label}</span></div>
         <div className="mt-4 font-mono text-3xl font-bold text-slate-900">{loading ? '…' : fmt(value)}</div>
       </div>)}
     </div>
