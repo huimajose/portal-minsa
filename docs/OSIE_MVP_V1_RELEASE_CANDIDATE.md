@@ -34,9 +34,18 @@ O DBM disponibiliza `/api/v1/internal/statistics/aggregate` exclusivamente para 
 - export PDF/CSV sem registos individuais;
 - ausência de dados demo no runtime.
 
+## Extensão do MVP de apresentação
+
+Foram promovidos ao MVP:
+- distribuição etária agregada no DBM, sem exposição de data de nascimento;
+- epidemiologia territorial por província/município quando a condição possui vínculo institucional explícito e a organização possui geografia registada;
+- diretório administrativo read-only via Auth Service, sanitizado e auditado.
+
+A ausência de vínculo territorial não é inferida. Registos sem dimensão suficiente permanecem fora do agregado territorial.
+
 ## Fora do MVP
 
-Não bloqueiam a demonstração: epidemiologia territorial clínica sem vínculo confiável, distribuição clínica por idade sem agregado seguro, diretório administrativo read-only de utilizadores, entrega externa de OTP por fornecedor e atualização controlada das dependências frontend sinalizadas pelo audit.
+Não bloqueiam a demonstração: entrega externa de OTP por fornecedor, enriquecimento epidemiológico para registos clínicos sem vínculo institucional explícito e atualização controlada das dependências frontend sinalizadas pelo audit.
 
 ## Evidência
 
