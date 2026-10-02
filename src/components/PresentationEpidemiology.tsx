@@ -1,18 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { StatisticsOverview } from '../server/statistics-service';
 import { fetchStatisticsOverview } from '../lib/statistics';
+import Pagination, { paginate } from './Pagination';
 
 export default function PresentationEpidemiology() {
   const [data,setData]=useState<StatisticsOverview|null>(null);
   const [error,setError]=useState<string|null>(null);
   const [loading,setLoading]=useState(true);
   const [province,setProvince]=useState('ALL');
+  const [page,setPage]=useState(1);
+  const pageSize=10;
 
   useEffect(()=>{void fetchStatisticsOverview().then(setData).catch(e=>setError(e instanceof Error?e.message:'Falha ao consultar epidemiologia.')).finally(()=>setLoading(false));},[]);
 
   const territorial=data?.territorial_epidemiology||[];
   const provinces=useMemo(()=>Array.from(new Set(territorial.map(x=>x.province).filter((x):x is string=>Boolean(x)))).sort(),[territorial]);
   const filtered=province==='ALL'?territorial:territorial.filter(x=>x.province===province);
+  useEffect(()=>{setPage(1);},[province]);
   const provinceTotals=useMemo(()=>{
     const totals=new Map<string,number>();
     territorial.forEach(x=>{if(x.province) totals.set(x.province,(totals.get(x.province)||0)+Number(x.count||0));});
@@ -36,7 +40,7 @@ export default function PresentationEpidemiology() {
     </div>
 
     <section className="glass-card rounded-2xl p-5"><div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between"><div><h2 className="font-bold">Epidemiologia por província e município</h2></div><select value={province} onChange={e=>setProvince(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"><option value="ALL">Todas as províncias</option>{provinces.map(p=><option key={p}>{p}</option>)}</select></div>
-      <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-xs uppercase text-slate-400"><tr><th className="px-3 py-3">Província</th><th className="px-3 py-3">Município</th><th className="px-3 py-3">Condição</th><th className="px-3 py-3 text-right">Registos</th></tr></thead><tbody>{filtered.map((row,index)=><tr key={`${row.province}-${row.municipality}-${row.condition}-${index}`} className="border-b border-slate-100"><td className="px-3 py-3 font-medium">{row.province||'—'}</td><td className="px-3 py-3">{row.municipality||'Não especificado'}</td><td className="px-3 py-3">{row.condition}</td><td className="px-3 py-3 text-right font-bold">{row.count}</td></tr>)}</tbody></table></div>
+      <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-xs uppercase text-slate-400"><tr><th className="px-3 py-3">Província</th><th className="px-3 py-3">Município</th><th className="px-3 py-3">Condição</th><th className="px-3 py-3 text-right">Registos</th></tr></thead><tbody>{paginate(filtered,page,pageSize).map((row,index)=><tr key={`${row.province}-${row.municipality}-${row.condition}-${index}`} className="border-b border-slate-100"><td className="px-3 py-3 font-medium">{row.province||'—'}</td><td className="px-3 py-3">{row.municipality||'Não especificado'}</td><td className="px-3 py-3">{row.condition}</td><td className="px-3 py-3 text-right font-bold">{row.count}</td></tr>)}</tbody></table></div><div className="mt-4"><Pagination page={page} totalItems={filtered.length} pageSize={pageSize} onPageChange={setPage} label="registos territoriais" /></div>
     </section>
     {error?<p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{error}</p>:null}
   </div>;
