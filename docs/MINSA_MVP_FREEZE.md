@@ -59,3 +59,16 @@ A organização do evento clínico deve ser distinta de organização proprietá
 ## Regra de release
 
 Após o smoke autenticado final, alterações funcionais novas deixam de entrar no MVP. Correções de bugs, segurança, dados, acessibilidade e documentação continuam permitidas.
+
+
+## Centro de Situação Territorial
+
+O mapa nacional do Portal MINSA funciona como uma superfície analítica agregada e possui três camadas no MVP:
+
+- **Rede hospitalar:** instituições OSIE georreferenciadas por província.
+- **Epidemiologia:** coroplético provincial calculado exclusivamente a partir de `territorial_epidemiology`, com filtro por condição clínica.
+- **Qualidade dos dados:** cobertura de georreferenciação institucional por província.
+
+Ao selecionar uma província, a ficha territorial apresenta apenas informação agregada ou administrativa: sede, municípios/comunas, instituições OSIE, registos clínicos territorializados e condições agregadas. O portal não recebe data de nascimento, registos clínicos individuais nem identidade de pacientes.
+
+Não existem previsões, inferências epidemiológicas, classificação por IA ou geografia inventada. Ausência de dados é apresentada como ausência de dados. A geometria administrativa utilizada no MVP é uma camada de visualização derivada da Lei 14/24 e não substitui cartografia oficial de precisão legal/geodésica. O drill-down cartográfico municipal permanece fora do freeze enquanto não houver geometria municipal suficientemente validada.
