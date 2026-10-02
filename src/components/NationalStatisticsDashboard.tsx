@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Activity, Building2, ClipboardList, Database, HeartPulse, Users } from 'lucide-react';
 import { fetchStatisticsOverview } from '../lib/statistics';
 import type { StatisticsOverview } from '../server/statistics-service';
-import InstitutionHeatmap from './InstitutionHeatmap';
 
 const fmt = (value: number | null | undefined) => value == null ? '—' : value.toLocaleString('pt-AO');
 
@@ -35,10 +34,10 @@ export default function NationalStatisticsDashboard() {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#004a99]">OSIE · Visão Nacional</p>
           <h1 className="mt-1 text-2xl font-bold text-slate-900">Indicadores nacionais de interoperabilidade</h1>
-          <p className="mt-1 text-sm text-slate-500">Dados agregados fornecidos pelo Statistics Service. Nenhum registo individual de paciente é apresentado.</p>
+          <p className="mt-1 text-sm text-slate-500">Panorama consolidado da rede nacional de saúde.</p>
         </div>
         <span className={`rounded-full px-3 py-1 text-xs font-bold ${error ? 'bg-red-50 text-red-700' : loading ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-          {error ? 'Serviço indisponível' : loading ? 'A sincronizar…' : 'Dados OSIE reais'}
+          {error ? 'Serviço indisponível' : loading ? 'A sincronizar…' : 'Atualizado'}
         </span>
       </div>
       {error && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
@@ -48,17 +47,16 @@ export default function NationalStatisticsDashboard() {
       {cards.map(([label, value, Icon]) => <div key={label} className="glass-card rounded-2xl p-5">
         <div className="flex items-center justify-between"><span className="text-sm font-semibold text-slate-500">{label}</span><Icon className="h-5 w-5 text-[#004a99]" /></div>
         <div className="mt-4 font-mono text-3xl font-bold text-slate-900">{loading ? '…' : fmt(value)}</div>
-        {label === 'Nodes ativos' && value == null && !loading && <p className="mt-2 text-xs text-slate-500">Indicador aguardando endpoint agregado do registry.</p>}
+        {label === 'Nodes ativos' && value == null && !loading && <p className="mt-2 text-xs text-slate-500">Informação ainda indisponível.</p>}
       </div>)}
     </div>
 
-    <InstitutionHeatmap organizations={data?.network.organizations || []} />
 
     <section className="glass-panel rounded-2xl p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="font-bold text-slate-800">Instituições OSIE registadas</h2>
-          <p className="mt-1 text-xs text-slate-500">Diretório real fornecido pelo Database Manager através do Statistics Service.</p>
+          <p className="mt-1 text-xs text-slate-500">Instituições participantes na rede nacional.</p>
         </div>
         <Building2 className="h-5 w-5 text-[#004a99]" />
       </div>
